@@ -1,5 +1,6 @@
 package com.example.projectlxp.review.entity;
 
+import com.example.projectlxp.global.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,7 +29,7 @@ import lombok.NoArgsConstructor;
                     name = "UK_review_user_course",
                     columnNames = {"user_id", "course_id"})
         })
-public class Review {
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
