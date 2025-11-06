@@ -21,6 +21,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.example.projectlxp.enrollment.entity.LectureProgress;
+import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.section.entity.Section;
 
 import lombok.AccessLevel;
@@ -33,7 +34,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "lectures")
 @SQLDelete(sql = "UPDATE lectures SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-public class Lecture {
+public class Lecture extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
