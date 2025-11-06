@@ -9,5 +9,4 @@ public class LxpProjectApplication {
     public static void main(String[] args) {
         SpringApplication.run(LxpProjectApplication.class, args);
     }
-
 }
