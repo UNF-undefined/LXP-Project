@@ -29,7 +29,6 @@ public class PageDTO {
     }
 
     public static PageDTO of(Page page) {
-        ;
         return PageDTO.builder()
                 .totalPages(page.getTotalPages())
                 .currentPage(page.getNumber())

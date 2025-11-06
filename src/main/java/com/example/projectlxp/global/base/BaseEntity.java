@@ -17,8 +17,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @MappedSuperclass
 public abstract class BaseEntity implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,8 +32,7 @@ public abstract class BaseEntity implements Serializable {
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt = null;
 
-    protected BaseEntity() {
-    }
+    protected BaseEntity() {}
 
     public BaseEntity(LocalDateTime createdAt, LocalDateTime modifiedAt) {
         this.createdAt = createdAt;
