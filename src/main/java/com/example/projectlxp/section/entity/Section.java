@@ -19,6 +19,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.lecture.entity.Lecture;
 
 import lombok.AccessLevel;
@@ -31,13 +32,13 @@ import lombok.NoArgsConstructor;
 @Table(name = "sections")
 @SQLDelete(sql = "UPDATE sections SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-public class Section {
+public class Section extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String title;
 
     @Column(name = "order_no", nullable = false)
