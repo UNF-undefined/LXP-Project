@@ -1,20 +1,36 @@
 package com.example.projectlxp.course.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.review.entity.Review;
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.user.entity.User;
-import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,19 +47,15 @@ public class Course {
     @Column(nullable = false, unique = true)
     private String title;
 
-    @Column
-    private String summary;
+    @Column private String summary;
 
-    @Lob
-    @Column
-    private String description;
+    @Lob @Column private String description;
 
     @Column(nullable = false)
     @ColumnDefault("0")
     private int price;
 
-    @Column
-    private String thumbnail;
+    @Column private String thumbnail;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
