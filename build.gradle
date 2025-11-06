@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '8.0.0'
 }
 
 group = 'com.example'
@@ -36,6 +37,20 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.named('compileJava') {
+    dependsOn 'spotlessApply'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+spotless {
+    java {
+        googleJavaFormat().aosp()
+        importOrder('java', 'javax', 'jakarta', 'org', 'com')
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
