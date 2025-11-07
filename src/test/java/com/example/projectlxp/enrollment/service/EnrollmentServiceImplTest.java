@@ -43,11 +43,11 @@ class EnrollmentServiceImplTest {
     @Test
     void enrollCourse() {
         // given
-        User user1 = userRepository.save(createUser("name1", "test1@test.com"));
+        User user1 = userRepository.save(createUser("test1@test.com"));
         Category category = categoryRepository.save(createCategory());
         Course course = courseRepository.save(createCourse(user1, category));
 
-        User user2 = userRepository.save(createUser("name2", "test2@test.com"));
+        User user2 = userRepository.save(createUser("test2@test.com"));
 
         // when
         EnrollmentResponseDTO enrollmentResponseDTO =
@@ -63,11 +63,11 @@ class EnrollmentServiceImplTest {
     @Test
     void enrollAlreadyEnrolledCourse() {
         // given
-        User user1 = userRepository.save(createUser("name1", "test1@test.com"));
+        User user1 = userRepository.save(createUser("test1@test.com"));
         Category category = categoryRepository.save(createCategory());
         Course course = courseRepository.save(createCourse(user1, category));
 
-        User user2 = userRepository.save(createUser("name2", "test2@test.com"));
+        User user2 = userRepository.save(createUser("test2@test.com"));
         Enrollment enrollment = createEnrollment(user2, course);
         enrollmentRepository.save(enrollment);
 
@@ -77,11 +77,10 @@ class EnrollmentServiceImplTest {
                 .hasMessage("이미 등록된 강좌입니다. 회원 ID: " + user2.getId() + ", 강좌 ID: " + course.getId());
     }
 
-    private User createUser(String nickname, String email) {
+    private User createUser(String email) {
         return User.builder()
                 .role(Role.STUDENT)
                 .name("테스트유저")
-                .nickname(nickname)
                 .email(email)
                 .hashedPassword("hashedPassword123!")
                 .build();
