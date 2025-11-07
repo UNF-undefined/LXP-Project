@@ -1,8 +1,6 @@
 package com.example.projectlxp.category.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.example.projectlxp.course.entity.Course;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,19 +11,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
+import lombok.Builder;
+import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import com.example.projectlxp.course.entity.Course;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "categories")
 @SQLDelete(sql = "UPDATE categories SET is_deleted = true WHERE id = ?")
@@ -52,4 +47,17 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     private List<Course> courses = new ArrayList<>();
+
+    protected Category() {
+    }
+
+    @Builder
+    public Category(Long id, String name, boolean isDeleted, Category parent, List<Category> children, List<Course> courses) {
+        this.id = id;
+        this.name = name;
+        this.isDeleted = isDeleted;
+        this.parent = parent;
+        this.children = children;
+        this.courses = courses;
+    }
 }
