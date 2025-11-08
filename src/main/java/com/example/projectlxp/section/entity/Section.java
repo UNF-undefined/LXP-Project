@@ -54,4 +54,15 @@ public class Section extends BaseEntity {
 
     @OneToMany(mappedBy = "section")
     private List<Lecture> lectures = new ArrayList<>();
+
+    // Factory Method Pattern
+    private Section(Course course, String title, int orderNo) {
+        this.course = course;
+        this.title = title;
+        this.orderNo = orderNo;
+    }
+
+    public static Section createSection(Course course, String title, int orderNo) {
+        return new Section(course, title, orderNo);
+    }
 }
