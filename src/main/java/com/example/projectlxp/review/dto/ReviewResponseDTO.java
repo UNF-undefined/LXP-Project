@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import com.example.projectlxp.review.entity.Review;
 
+import lombok.Getter;
+
+@Getter
 public class ReviewResponseDTO {
     private Long reviewId;
     private String content;
