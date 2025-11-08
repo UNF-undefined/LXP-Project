@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor // "final이 붙은 필드의 생성자를 자동으로 만들어 줌(생성자 주입)"
-@Transactional(readOnly = true) // 조회 전용으로 읽기에 성능 최적화
+@Transactional(readOnly = true) // 이 클래스의 모든 메서드는 기본적으로 '조회 전용' readOnly = true로 성능 최적화
 public class ReviewServiceImpl implements ReviewService {
 
     // (의존성 주입) 서비스는 레포지토리에게 일을 시켜야 함
@@ -29,19 +29,26 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Page<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable) {
 
-        // courseId로 강좌를 조회
-        // Optional을 반환하므로, 존재하지 않으면 예외를 발생.
+        // Controller는 courseId만 준다.
+        // Repository에게는 Course(엔티티)를 넘겨줘야 함 그래서 CourseRepository로 먼저 강좌를 찾는다.
+        // 만약 ID에 해당하는 강좌가 없으면, 예외를 발생. (데이터 정합성)
         Course course =
-                courseRepository.findById(courseId)
-                        .orElseThrow(() -> courseNotFound(courseId)); // 없는 경우 IllegalArgumentException 발생
+                courseRepository
+                        .findById(courseId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
-        // 조회된 Course 엔티티를 기반으로 리뷰를 페이지 단위로 조회
-        // Pageable 객체에는 페이지 번호, 크기, 정렬 정보가 들어있음
+        // reviewRepository 메서드 호출 (Course 엔티티와 Pageable 객체를 전달)
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
 
-        // Page<Review>를 Page<ReviewResponseDTO>로 변환
-        // .map()을 사용하면 Page 내부의 각 Review 객체를 ReviewResponseDTO로 변환
-        return reviewPage.map(ReviewResponseDTO::new);
+        // Page<Review> (엔티티 페이지)를 Page<ReviewResponseDto> (DTO 페이지)로 변환
+        // .map()을 사용하면, 리스트의 각 Review 객체를 ReviewResponseDto 생성자에 넣어 새 DTO로 변환.
+        Page<ReviewResponseDTO> dtoPage = reviewPage.map(review -> new ReviewResponseDTO(review));
+
+        // 변환된 DTO 페이지를 Controller에게 반환
+        return dtoPage;
     }
 
 }

@@ -21,9 +21,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/courses/{courseId}")
-    public BaseResponse<Page<ReviewResponseDTO>> getReviewsByCourse(
-                                                                     @PathVariable Long courseId, Pageable pageable) {
+    public ResponseEntity<BaseResponse<Page<ReviewResponseDTO>>> getReviewsByCourse(
+            @PathVariable Long courseId, Pageable pageable) {
         Page<ReviewResponseDTO> dtoList = reviewService.getReviewsByCourse(courseId, pageable);
-        return BaseResponse.success(dtoList); // ★ 3. 'BaseResponse' 객체를 바로 반환
+        return ResponseEntity.ok(BaseResponse.success(dtoList));
     }
 }
