@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,10 +24,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (API서버)
+
+                // 세션 정책 추가 (API서버는 STATELESS 권장
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // formLogin 설정추가 (로그인 처리)
+                .formLogin(
+                        form ->
+                                form
+                                        // Spring Security가 처리할 로그인 API 경로
+                                        .loginProcessingUrl("/api/login")
+                                        // 로그인 ID로 사용할 파라미터 이름
+                                        .usernameParameter("email")
+                                        // 로그인 API 누구나 접근허용
+                                        .permitAll())
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
-                                        .requestMatchers("/api/join")
+                                        .requestMatchers("/api/join", "/api/login")
                                         .permitAll() // 회원가입 경로는 누구나
                                         .anyRequest()
                                         .authenticated() // 그 외 모든 요청은 인증 필요
