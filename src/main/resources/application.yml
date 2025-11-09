@@ -1,14 +1,5 @@
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/
-    username:
-    password:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto:
-    properties:
-       show_sql: true
-       format_sql: true'
-       dialect: org.hibernate.dialect.MySQLDialect
+  application:
+    name: LXP-Project
+  profiles:
+    active: local
