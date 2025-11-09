@@ -1,6 +1,5 @@
 package com.example.projectlxp.review.entity;
 
-import com.example.projectlxp.global.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,6 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.user.entity.User;
 
 import lombok.AccessLevel;
