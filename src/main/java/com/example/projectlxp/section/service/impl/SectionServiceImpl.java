@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.section.controller.dto.response.SectionCreateResponseDTO;
+import com.example.projectlxp.section.controller.dto.response.SectionUpdateResponseDTO;
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.section.service.SectionService;
@@ -54,6 +55,30 @@ public class SectionServiceImpl implements SectionService {
         response =
                 new SectionCreateResponseDTO(
                         savedSection.getId(), savedSection.getTitle(), savedSection.getOrderNo());
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public SectionUpdateResponseDTO modifySection(Long sectionId, String title, int orderNo) {
+        // TODO : order No가 이미 존재하면, 이미 존재하는 orderNO를 변경해야 하나 ?!
+
+        // find Section By ID
+        Section findSection =
+                sectionRepository
+                        .findById(sectionId)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Section 입니다."));
+
+        // update Section
+        findSection.setTitle(title);
+        findSection.setOrderNo(orderNo);
+
+        // convert To SectionUpdateResponseDTO
+        SectionUpdateResponseDTO response;
+        response =
+                new SectionUpdateResponseDTO(
+                        findSection.getId(), findSection.getTitle(), findSection.getOrderNo());
 
         return response;
     }
