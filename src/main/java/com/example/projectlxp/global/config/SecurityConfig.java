@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 비밀번호 암호화 도구 (PasswordEncoder)를 Bean을 ㅗ등록
+    // 비밀번호 암호화 도구 (PasswordEncoder)를 Bean으로 등록
 
     @Bean
     public PasswordEncoder passwordEncoder() {
