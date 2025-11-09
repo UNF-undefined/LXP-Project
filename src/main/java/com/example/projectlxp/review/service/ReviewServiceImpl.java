@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor // "final이 붙은 필드의 생성자를 자동으로 만들어 줌(생성자 주입)"
+@Transactional(readOnly = true) // 조회 전용으로 읽기에 성능 최적화
 public class ReviewServiceImpl implements ReviewService {
 
     // (의존성 주입) 서비스는 레포지토리에게 일을 시켜야 함
@@ -26,7 +27,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 조회 전용으로 읽기에 성능 최적화
     public Page<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable) {
 
         // courseId로 강좌를 조회
