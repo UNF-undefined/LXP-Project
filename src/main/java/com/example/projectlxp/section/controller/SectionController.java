@@ -4,14 +4,18 @@ import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.section.controller.dto.request.SectionCreateRequestDTO;
+import com.example.projectlxp.section.controller.dto.request.SectionUpdateRequestDTO;
 import com.example.projectlxp.section.controller.dto.response.SectionCreateResponseDTO;
+import com.example.projectlxp.section.controller.dto.response.SectionUpdateResponseDTO;
 import com.example.projectlxp.section.service.SectionService;
 
 @RestController
@@ -38,6 +42,21 @@ public class SectionController {
             return BaseResponse.error(HttpStatus.NOT_FOUND, "Course를 찾을 수 없습니다.");
         } catch (IllegalStateException e) {
             return BaseResponse.error(HttpStatus.BAD_REQUEST, "Section의 순서가 동일합니다.");
+        }
+    }
+
+    @PutMapping("/{sectionId}")
+    public BaseResponse<SectionUpdateResponseDTO> updateSection(
+            @PathVariable(name = "sectionId") Long sectionId,
+            @RequestBody @Valid SectionUpdateRequestDTO request) {
+        try {
+            SectionUpdateResponseDTO updatedSection =
+                    sectionService.modifySection(sectionId, request.title, request.orderNo);
+
+            return BaseResponse.success(updatedSection);
+
+        } catch (IllegalArgumentException e) {
+            return BaseResponse.error(HttpStatus.BAD_REQUEST, "존재하지 않는 Section입니다.");
         }
     }
 }
