@@ -39,6 +39,12 @@ public class SecurityConfig {
                                         .usernameParameter("email")
                                         // 로그인 API 누구나 접근허용
                                         .permitAll())
+                // 로그아웃
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout")
+                        .permitAll()
+                )
+
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
