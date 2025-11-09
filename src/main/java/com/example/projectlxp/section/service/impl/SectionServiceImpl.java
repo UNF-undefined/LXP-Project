@@ -35,7 +35,7 @@ public class SectionServiceImpl implements SectionService {
                         .findById(courseId)
                         .orElseThrow(() -> new IllegalArgumentException("Course를 찾을 수 없습니다."));
 
-        // check section by courseId & orderNo유
+        // check section by courseId & orderNo
         sectionRepository
                 .findByCourseIdAndOrderNo(courseId, orderNo)
                 .ifPresent(
