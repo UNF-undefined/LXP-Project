@@ -35,13 +35,13 @@ public class SectionServiceImpl implements SectionService {
                         .findById(courseId)
                         .orElseThrow(() -> new IllegalArgumentException("Course를 찾을 수 없습니다."));
 
-        // check section by courseId & orderNo
-        Section findedSection =
-                sectionRepository.findByCourseIdAndOrderNo(courseId, orderNo).orElse(null);
-
-        if (findedSection != null) {
-            throw new IllegalStateException("동일한 순서로 Section을 생성하고 있습니다.");
-        }
+        // check section by courseId & orderNo유
+        sectionRepository
+                .findByCourseIdAndOrderNo(courseId, orderNo)
+                .ifPresent(
+                        section -> {
+                            throw new IllegalStateException("동일한 순서로 Section을 생성하고 있습니다.");
+                        });
 
         // create Section
         Section newSection = Section.createSection(findCourse, title, orderNo);
