@@ -3,6 +3,7 @@ package com.example.projectlxp.review.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 
 public interface ReviewService {
@@ -14,4 +15,14 @@ public interface ReviewService {
      * @return 페이징 처리된 리뷰 DTO 목록 (Page<ReviewResponseDto>)
      */
     Page<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable);
+
+    /**
+     * 리뷰 작성.
+     *
+     * @param courseId 강좌 ID
+     * @param requestDTO 리뷰 내용/평점이 담긴 DTO
+     * @param userId (임시) 작성자 유저 ID
+     * @return 생성된 리뷰의 상세 DTO
+     */
+    ReviewResponseDTO createReview(Long courseId, ReviewRequestDTO requestDTO, Long userId);
 }
