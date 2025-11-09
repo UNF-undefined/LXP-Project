@@ -65,4 +65,14 @@ public class Section extends BaseEntity {
     public static Section createSection(Course course, String title, int orderNo) {
         return new Section(course, title, orderNo);
     }
+
+    // Setter
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setOrderNo(int orderNo) {
+        this.orderNo = orderNo;
+    }
 }
