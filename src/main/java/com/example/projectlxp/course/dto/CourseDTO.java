@@ -1,6 +1,8 @@
 package com.example.projectlxp.course.dto;
 
+import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.user.entity.User;
 
 public record CourseDTO(
         Long id,
@@ -10,9 +12,23 @@ public record CourseDTO(
         UserDTO instructor,
         String level,
         int price,
-        String thumbnail) {
+        String thumbnail,
+        CategoryDTO category) {
 
-    public record UserDTO(Long id, String name, String email) {}
+    public record UserDTO(Long id, String name, String email) {
+        public static UserDTO of(User user) {
+            return new UserDTO(user.getId(), user.getName(), user.getEmail());
+        }
+    }
+
+    public record CategoryDTO(Long id, String name, CategoryDTO parent) {
+        public static CategoryDTO of(Category category) {
+            return new CategoryDTO(
+                    category.getId(),
+                    category.getName(),
+                    category.getParent() != null ? CategoryDTO.of(category.getParent()) : null);
+        }
+    }
 
     public static CourseDTO from(Course course) {
         return new CourseDTO(
@@ -20,12 +36,10 @@ public record CourseDTO(
                 course.getTitle(),
                 course.getSummary(),
                 course.getDescription(),
-                new UserDTO(
-                        course.getInstructor().getId(),
-                        course.getInstructor().getName(),
-                        course.getInstructor().getEmail()),
+                UserDTO.of(course.getInstructor()),
                 course.getLevel().name(),
                 course.getPrice(),
-                course.getThumbnail());
+                course.getThumbnail(),
+                CategoryDTO.of(course.getCategory()));
     }
 }

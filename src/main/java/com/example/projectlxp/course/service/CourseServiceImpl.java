@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.course.dto.CourseDTO;
+import com.example.projectlxp.course.dto.CourseResponse;
 import com.example.projectlxp.course.dto.CourseSaveRequest;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.repository.CourseRepository;
@@ -25,7 +26,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public CourseDTO saveCourse(CourseSaveRequest request, Long userId) {
+    public CourseResponse saveCourse(CourseSaveRequest request, Long userId) {
         validator.validateCourseCreation(request.categoryId(), userId);
         Course entity =
                 request.to(
@@ -38,6 +39,6 @@ public class CourseServiceImpl implements CourseService {
                         .findByIdAndCategoryIdAndInstructorId(
                                 save.getId(), request.categoryId(), userId)
                         .orElseThrow(() -> new IllegalArgumentException("강좌 저장에 실패했습니다."));
-        return CourseDTO.from(course);
+        return new CourseResponse(CourseDTO.from(course), null);
     }
 }

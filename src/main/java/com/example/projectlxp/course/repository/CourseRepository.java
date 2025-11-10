@@ -11,7 +11,7 @@ import com.example.projectlxp.course.entity.Course;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    @EntityGraph(attributePaths = {"category", "instructor"})
+    @EntityGraph(attributePaths = {"category", "instructor", "parent"})
     Optional<Course> findByIdAndCategoryIdAndInstructorId(
             Long courseId, Long categoryId, Long userId);
 

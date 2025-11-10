@@ -57,7 +57,7 @@ class CourseServiceImplTest {
         when(entityManager.getReference(eq(Category.class), any())).thenReturn(category);
         when(courseRepository.findByIdAndCategoryIdAndInstructorId(any(), any(), any()))
                 .thenReturn(Optional.of(course));
-        CourseDTO courseDTO = courseService.saveCourse(request, 1L);
+        CourseDTO courseDTO = courseService.saveCourse(request, 1L).course();
 
         // then
         assertAll(
