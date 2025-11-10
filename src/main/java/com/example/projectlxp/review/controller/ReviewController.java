@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +51,7 @@ public class ReviewController {
         return BaseResponse.success(responseDTO);
     }
 
+    // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public BaseResponse<Void> deleteReview(
             @PathVariable Long reviewId,
@@ -57,5 +59,19 @@ public class ReviewController {
             ) {
         reviewService.deleteReview(reviewId, tempUserId);
         return BaseResponse.success(null);
+    }
+
+    // 리뷰 수정
+    @PatchMapping("/{reviewId}") // ★ 2. "@PatchMapping"
+    public BaseResponse<ReviewResponseDTO> updateReview(
+            @PathVariable Long reviewId,
+            @Valid @RequestBody ReviewRequestDTO requestDTO,
+            // (임시) '본인 확인'을 위한 유저 ID
+            @RequestParam(defaultValue = "1") Long tempUserId) {
+
+        ReviewResponseDTO responseDTO =
+                reviewService.updateReview(reviewId, requestDTO, tempUserId);
+
+        return BaseResponse.success(responseDTO);
     }
 }

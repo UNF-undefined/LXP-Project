@@ -43,7 +43,7 @@ public class Review extends BaseEntity {
     private String content;
 
     @Column(nullable = false, columnDefinition = "INT CHECK (rating >= 1 AND rating <= 5)")
-    private int rating;
+    private double rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -52,4 +52,9 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    public void updateReview(String newContent, double newRating) {
+        this.content = newContent;
+        this.rating = newRating;
+    }
 }

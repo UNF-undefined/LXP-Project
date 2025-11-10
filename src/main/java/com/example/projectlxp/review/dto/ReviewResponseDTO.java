@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ReviewResponseDTO {
     private Long reviewId;
     private String content;
-    private int rating;
+    private double rating;
     private String username;
     private LocalDateTime createdAt;
 

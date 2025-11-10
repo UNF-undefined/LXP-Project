@@ -8,7 +8,7 @@ import com.example.projectlxp.review.dto.ReviewResponseDTO;
 
 public interface ReviewService {
     /**
-     * 특정 강좌의 리뷰 목록을 페이징하여 조회. Interface에는 이 메서드 껍데기만 존재
+     * 특정 강좌의 리뷰 목록을 페이징하여 조회.
      *
      * @param courseId 조회할 강좌의 ID
      * @param pageable 페이징 및 정렬 정보 (page, size, sort)
@@ -33,4 +33,14 @@ public interface ReviewService {
      * @param userId (임시) 삭제를 요청한 유저의 ID
      */
     void deleteReview(Long reviewId, Long userId);
+
+    /**
+     * [ #45 ] 리뷰 수정
+     *
+     * @param reviewId 수정할 리뷰의 ID
+     * @param requestDTO 수정할 내용(content, rating)이 담긴 DTO
+     * @param userId (임시) 수정을 요청한 유저의 ID
+     * @return '수정 완료된' 리뷰의 상세 DTO
+     */
+    ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO requestDTO, Long userId);
 }

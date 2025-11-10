@@ -10,6 +10,7 @@ import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
 import com.example.projectlxp.global.dto.PageDTO;
 import com.example.projectlxp.global.dto.PageResponse;
+import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.entity.Review;
@@ -38,7 +39,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(courseId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
@@ -51,17 +52,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /** '리뷰 작성' 메서드 */
-    @Transactional // ★ '쓰기'용 트랜잭션 (readOnly = false)
+    @Transactional
     @Override
     public ReviewResponseDTO createReview(Long courseId, ReviewRequestDTO requestDTO, Long userId) {
 
-        // 1. 엔티티 조회
         User user =
                 userRepository
                         .findById(userId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 유저를 찾을 수 없습니다. id=" + userId));
 
         Course course =
@@ -69,17 +69,17 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(courseId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         boolean isEnrolled = enrollmentRepository.existsByUserAndCourse(user, course);
         if (!isEnrolled) {
-            throw new RuntimeException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
+            throw new CustomBusinessException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
         }
 
         boolean hasReviewed = reviewRepository.existsByUserAndCourse(user, course);
         if (hasReviewed) {
-            throw new RuntimeException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
+            throw new CustomBusinessException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
         }
 
         Review newReview =
@@ -104,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(userId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 유저를 찾을 수 없습니다. id=" + userId));
 
         Review review =
@@ -112,7 +112,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(reviewId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
 
         this.checkReviewOwner(review, user);
@@ -126,5 +126,32 @@ public class ReviewServiceImpl implements ReviewService {
 
             throw new RuntimeException("해당 리뷰에 대한 권한이 없습니다.");
         }
+    }
+
+    @Transactional
+    @Override
+    public ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO requestDTO, Long userId) {
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
+
+        Review review =
+                reviewRepository
+                        .findById(reviewId)
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+
+        this.checkReviewOwner(review, user);
+
+        review.updateReview(requestDTO.getContent(), requestDTO.getRating());
+
+        return new ReviewResponseDTO(review);
     }
 }
