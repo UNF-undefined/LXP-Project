@@ -2,6 +2,7 @@ package com.example.projectlxp.enrollment.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,6 +29,7 @@ import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.service.EnrollmentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@WithMockUser
 @WebMvcTest(EnrollmentController.class)
 class EnrollmentControllerTest {
     @Autowired private MockMvc mockMvc;
@@ -60,7 +63,9 @@ class EnrollmentControllerTest {
 
         /// when // then
         mockMvc.perform(
-                        post("/enrollments?userId=" + userId)
+                        post("/enrollments")
+                                .with(csrf())
+                                .param("userId", String.valueOf(userId))
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -75,13 +80,15 @@ class EnrollmentControllerTest {
     void createOrderWithEmptyProductNumbers() throws Exception {
         // given
         CreateEnrollmentRequestDTO request = CreateEnrollmentRequestDTO.builder().build();
-
         // when // then
         mockMvc.perform(
-                        post("/enrollments?userId=1")
+                        post("/enrollments")
+                                .param("userId", "1")
                                 .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .with(csrf()))
                 .andDo(print())
+                .andExpect(jsonPath("$.message").value("강좌 ID는 필수 값입니다."))
                 .andExpect(status().isBadRequest());
     }
 

@@ -15,14 +15,14 @@ public class BaseResponse<T> extends ResponseDTO {
     }
 
     public static <T> BaseResponse<T> success(T data) {
-        return new BaseResponse<T>(HttpStatus.OK, HttpStatus.OK.name(), data);
+        return new BaseResponse<>(HttpStatus.OK, HttpStatus.OK.name(), data);
     }
 
     public static <T> BaseResponse<T> success(String message, T data) {
-        return new BaseResponse<T>(HttpStatus.OK, message, data);
+        return new BaseResponse<>(HttpStatus.OK, message, data);
     }
 
     public static <T> BaseResponse<T> error(HttpStatus status, String message) {
-        return new BaseResponse<T>(status, message, null);
+        return new BaseResponse<>(status, message, null);
     }
 }
