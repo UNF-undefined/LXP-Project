@@ -29,4 +29,13 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
                     + "WHERE s.course.id = :courseId AND s.orderNo > :orderNo")
     void decrementOrderAfterDelete(
             @Param("courseId") Long courseId, @Param("orderNo") int deletedOrderNo);
+
+    @Query(
+            """
+    SELECT s FROM Section s
+    JOIN FETCH s.course c
+    JOIN FETCH c.instructor
+    WHERE s.id = :id
+    """)
+    Optional<Section> findByIdWithCourseAndInstructor(@Param("id") Long id);
 }
