@@ -13,7 +13,7 @@ public interface SectionService {
      * @param orderNo 섹션의 순서
      * @return SectionCreateResponseDTO
      */
-    public SectionCreateResponseDTO registerSection(Long courseId, String title, int orderNo);
+    SectionCreateResponseDTO registerSection(Long courseId, String title, int orderNo);
 
     /**
      * 섹션을 업데이트 합니다.
@@ -23,5 +23,5 @@ public interface SectionService {
      * @param orderNo 섹션의 순서
      * @return SectionUpdateResponseDTO
      */
-    public SectionUpdateResponseDTO modifySection(Long sectionId, String title, int orderNo);
+    SectionUpdateResponseDTO modifySection(Long sectionId, String title, int orderNo);
 }
