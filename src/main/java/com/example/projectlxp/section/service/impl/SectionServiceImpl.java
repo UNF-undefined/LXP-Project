@@ -32,14 +32,20 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionCreateResponseDTO registerSection(Long courseId, String title, int orderNo) {
-        // TODO : IllegalArgumentException으로 하려고 하니 Controller에서 Catch 분리를 어떻게 해야할지 모르겠음 !
+    public SectionCreateResponseDTO registerSection(
+            Long userId, Long courseId, String title, int orderNo) {
+        // TODO : Global Exception이 만들어지면 수정하자 !
 
         // find Course By id
         Course findCourse =
                 courseRespository
                         .findById(courseId)
                         .orElseThrow(() -> new IllegalArgumentException("Course를 찾을 수 없습니다."));
+
+        // check who created course
+        if (findCourse.getInstructor().getId() != userId) {
+            throw new IllegalArgumentException("섹션을 생성할 권한이 없습니다.");
+        }
 
         // check section by courseId & orderNo
         sectionRepository

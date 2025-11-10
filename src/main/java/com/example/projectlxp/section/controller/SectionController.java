@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
@@ -32,9 +33,11 @@ public class SectionController {
 
     @PostMapping
     public BaseResponse<SectionCreateResponseDTO> createSection(
-            @RequestBody @Valid SectionCreateRequestDTO request) {
+            @RequestBody @Valid SectionCreateRequestDTO request,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
         SectionCreateResponseDTO createdSection =
-                sectionService.registerSection(request.courseId, request.title, request.orderNo);
+                sectionService.registerSection(
+                        tempUserId, request.courseId, request.title, request.orderNo);
 
         return new BaseResponse<>(HttpStatus.CREATED, "Created Section.", createdSection);
     }
