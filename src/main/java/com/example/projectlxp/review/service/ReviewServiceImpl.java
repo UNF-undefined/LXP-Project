@@ -24,30 +24,24 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true) // 조회 전용으로 읽기에 성능 최적화
 public class ReviewServiceImpl implements ReviewService {
 
-    // (의존성 주입) 서비스는 레포지토리에게 일을 시켜야 함
     private final ReviewRepository reviewRepository;
     private final CourseRepository courseRepository;
 
     private final UserRepository userRepository;
 
-    private final EnrollmentRepository enrollmentRepository;// 강좌 ID로 강좌를 찾아야 함!
+    private final EnrollmentRepository enrollmentRepository;
 
 
     @Override
     public PageResponse<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable) {
-
-        // courseId로 강좌를 조회
-        // Optional을 반환하므로, 존재하지 않으면 예외를 발생.
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
-        // 조회된 Course 엔티티를 기반으로 리뷰를 페이지 단위로 조회
-        // Pageable 객체에는 페이지 번호, 크기, 정렬 정보가 들어있음
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
 
         Page<ReviewResponseDTO> dtoPage = reviewPage.map(ReviewResponseDTO::new);
 
-        // DTO (PageDTO)를 생성합니다.
+
         PageDTO pageInfo = PageDTO.of(dtoPage);
 
         return PageResponse.success((ReviewResponseDTO) dtoPage.getContent(), pageInfo);
