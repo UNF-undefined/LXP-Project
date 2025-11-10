@@ -1,6 +1,5 @@
 package com.example.projectlxp.review.service;
 
-import com.example.projectlxp.global.error.CustomBusinessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
 import com.example.projectlxp.global.dto.PageDTO;
 import com.example.projectlxp.global.dto.PageResponse;
+import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.entity.Review;
