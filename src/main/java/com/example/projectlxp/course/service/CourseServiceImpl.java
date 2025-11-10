@@ -17,6 +17,7 @@ import com.example.projectlxp.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
@@ -39,6 +40,16 @@ public class CourseServiceImpl implements CourseService {
                         .findByIdAndCategoryIdAndInstructorId(
                                 save.getId(), request.categoryId(), userId)
                         .orElseThrow(() -> new IllegalArgumentException("강좌 저장에 실패했습니다."));
+        return new CourseResponse(CourseDTO.from(course), null);
+    }
+
+    @Override
+    public CourseResponse searchCourse(Long courseId) {
+        Course course =
+                courseRepository
+                        .findByIdWithInstructorAndCategory(courseId)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌 ID입니다."));
+
         return new CourseResponse(CourseDTO.from(course), null);
     }
 }
