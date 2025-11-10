@@ -115,12 +115,16 @@ public class ReviewServiceImpl implements ReviewService {
                                         new IllegalArgumentException(
                                                 "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
 
-        Long reviewOwnerId = review.getUser().getId();
-
-        if (!reviewOwnerId.equals(userId)) {
-            throw new RuntimeException("리뷰를 삭제할 권한이 없습니다.");
-        }
+        this.checkReviewOwner(review, user);
 
         reviewRepository.delete(review);
+    }
+
+    private void checkReviewOwner(Review review, User user) {
+        Long reviewOwnerId = review.getUser().getId();
+        if (!reviewOwnerId.equals(user.getId())) {
+
+            throw new RuntimeException("해당 리뷰에 대한 권한이 없습니다.");
+        }
     }
 }
