@@ -20,7 +20,7 @@ public class ReviewResponseDTO {
         this.reviewId = review.getId();
         this.content = review.getContent();
         this.rating = review.getRating();
-        this.username = review.getUser().getName();
+        this.username = (review.getUser().isDeleted()) ? "알 수 없음" : review.getUser().getName();
         this.createdAt = review.getCreatedAt();
     }
 }
