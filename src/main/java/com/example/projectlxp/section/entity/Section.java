@@ -66,13 +66,9 @@ public class Section extends BaseEntity {
         return new Section(course, title, orderNo);
     }
 
-    // Setter
-
-    public void setTitle(String title) {
+    // Method
+    public void updateSection(String title, int orderNo) {
         this.title = title;
-    }
-
-    public void setOrderNo(int orderNo) {
         this.orderNo = orderNo;
     }
 }
