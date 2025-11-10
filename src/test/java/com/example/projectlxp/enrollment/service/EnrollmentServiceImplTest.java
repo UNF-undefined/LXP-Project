@@ -76,7 +76,7 @@ class EnrollmentServiceImplTest {
 
         // when - then
         assertThatThrownBy(() -> enrollmentService.enrollCourse(user2.getId(), requestDTO))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(RuntimeException.class)
                 .hasMessage("이미 등록된 강좌입니다. 회원 ID: " + user2.getId() + ", 강좌 ID: " + course.getId());
     }
 

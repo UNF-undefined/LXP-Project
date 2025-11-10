@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateEnrollmentRequestDTO {
-    @NotNull private Long courseId;
+    @NotNull(message = "강좌 ID는 필수 값입니다.")
+    private Long courseId;
 }
