@@ -76,4 +76,9 @@ public class User extends BaseEntity {
         this.hashedPassword = hashedPassword;
         this.profileImage = profileImage;
     }
+
+    public static User createUser(
+            String name, String email, String hashedPassword, Role role, String profileImage) {
+        return new User(name, role, email, hashedPassword, profileImage);
+    }
 }
