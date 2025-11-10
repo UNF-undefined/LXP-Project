@@ -32,31 +32,20 @@ public class SectionController {
     @PostMapping
     public BaseResponse<SectionCreateResponseDTO> createSection(
             @RequestBody @Valid SectionCreateRequestDTO request) {
-        try {
-            SectionCreateResponseDTO createdSection =
-                    sectionService.registerSection(
-                            request.courseId, request.title, request.orderNo);
+        SectionCreateResponseDTO createdSection =
+                sectionService.registerSection(request.courseId, request.title, request.orderNo);
 
-            return new BaseResponse<>(HttpStatus.CREATED, "Created Section.", createdSection);
-        } catch (IllegalArgumentException e) {
-            return BaseResponse.error(HttpStatus.NOT_FOUND, "Course를 찾을 수 없습니다.");
-        } catch (IllegalStateException e) {
-            return BaseResponse.error(HttpStatus.BAD_REQUEST, "Section의 순서가 동일합니다.");
-        }
+        return new BaseResponse<>(HttpStatus.CREATED, "Created Section.", createdSection);
     }
 
     @PutMapping("/{sectionId}")
     public BaseResponse<SectionUpdateResponseDTO> updateSection(
             @PathVariable(name = "sectionId") Long sectionId,
             @RequestBody @Valid SectionUpdateRequestDTO request) {
-        try {
-            SectionUpdateResponseDTO updatedSection =
-                    sectionService.modifySection(sectionId, request.title, request.orderNo);
 
-            return BaseResponse.success(updatedSection);
+        SectionUpdateResponseDTO updatedSection =
+                sectionService.modifySection(sectionId, request.title, request.orderNo);
 
-        } catch (IllegalArgumentException e) {
-            return BaseResponse.error(HttpStatus.BAD_REQUEST, "존재하지 않는 Section입니다.");
-        }
+        return BaseResponse.success(updatedSection);
     }
 }
