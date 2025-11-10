@@ -71,15 +71,9 @@ public class SectionServiceImpl implements SectionService {
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Section 입니다."));
 
         // update Section
-        findSection.setTitle(title);
-        findSection.setOrderNo(orderNo);
+        findSection.updateSection(title, orderNo);
 
-        // convert To SectionUpdateResponseDTO
-        SectionUpdateResponseDTO response;
-        response =
-                new SectionUpdateResponseDTO(
-                        findSection.getId(), findSection.getTitle(), findSection.getOrderNo());
-
-        return response;
+        // convert To SectionUpdateResponseDTO & return
+        return new SectionUpdateResponseDTO(findSection.getId(), " ", findSection.getOrderNo());
     }
 }
