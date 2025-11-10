@@ -1,10 +1,11 @@
 package com.example.projectlxp.category.service;
 
-import com.example.projectlxp.category.dto.CategoryDTO;
-import com.example.projectlxp.category.repository.CategoryRepository;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.example.projectlxp.category.dto.CategoryDTO;
+import com.example.projectlxp.category.repository.CategoryRepository;
 
 @Service
 public class CategoryService {
@@ -17,7 +18,7 @@ public class CategoryService {
 
     public List<CategoryDTO> getCategories() {
         return categoryRepository.findAllCategoryOptimize().stream()
-            .map(CategoryDTO::from)
-            .toList();
+                .map(CategoryDTO::from)
+                .toList();
     }
 }

@@ -1,12 +1,14 @@
 package com.example.projectlxp.category.controller;
 
-import com.example.projectlxp.category.dto.CategoryDTO;
-import com.example.projectlxp.category.service.CategoryService;
-import com.example.projectlxp.global.dto.BaseResponse;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.example.projectlxp.category.dto.CategoryDTO;
+import com.example.projectlxp.category.service.CategoryService;
+import com.example.projectlxp.global.dto.BaseResponse;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -18,6 +20,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
+    @GetMapping
     public BaseResponse<List<CategoryDTO>> getAllCategories() {
         return BaseResponse.success("카테고리 목록 조회 성공!", categoryService.getCategories());
     }

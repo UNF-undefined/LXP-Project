@@ -1,6 +1,8 @@
 package com.example.projectlxp.category.entity;
 
-import com.example.projectlxp.course.entity.Course;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,14 +13,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Builder;
-import lombok.Getter;
+
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.projectlxp.course.entity.Course;
+
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Entity
@@ -48,11 +51,11 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Course> courses = new ArrayList<>();
 
-    protected Category() {
-    }
+    protected Category() {}
 
     @Builder
-    public Category(Long id, String name, boolean isDeleted, Category parent, List<Course> courses) {
+    public Category(
+            Long id, String name, boolean isDeleted, Category parent, List<Course> courses) {
         this.id = id;
         this.name = name;
         this.isDeleted = isDeleted;
@@ -64,5 +67,4 @@ public class Category {
         this.children.add(child);
         child.parent = this;
     }
-
 }
