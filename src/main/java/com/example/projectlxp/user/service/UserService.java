@@ -10,6 +10,4 @@ public interface UserService {
      * */
 
     void join(UserJoinRequestDTO requestDTO);
-
-    // 로그인
 }

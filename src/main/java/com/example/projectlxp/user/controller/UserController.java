@@ -30,7 +30,6 @@ public class UserController {
             @Validated @RequestBody UserJoinRequestDTO requestDTO) {
 
         userService.join(requestDTO);
-
         return ResponseEntity.ok("회원가입 되셨습니다.");
     }
 }
