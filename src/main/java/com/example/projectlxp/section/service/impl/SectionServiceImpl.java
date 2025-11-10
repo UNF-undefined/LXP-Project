@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.repository.CourseRepository;
+import com.example.projectlxp.lecture.repository.LectureRepository;
 import com.example.projectlxp.section.controller.dto.response.SectionCreateResponseDTO;
 import com.example.projectlxp.section.controller.dto.response.SectionUpdateResponseDTO;
 import com.example.projectlxp.section.entity.Section;
@@ -17,12 +18,16 @@ public class SectionServiceImpl implements SectionService {
 
     private final SectionRepository sectionRepository;
     private final CourseRepository courseRespository;
+    private final LectureRepository lectureRepository;
 
     @Autowired
     public SectionServiceImpl(
-            SectionRepository sectionRepository, CourseRepository courseRespository) {
+            SectionRepository sectionRepository,
+            CourseRepository courseRespository,
+            LectureRepository lectureRepository) {
         this.sectionRepository = sectionRepository;
         this.courseRespository = courseRespository;
+        this.lectureRepository = lectureRepository;
     }
 
     @Override
@@ -76,5 +81,25 @@ public class SectionServiceImpl implements SectionService {
         // convert To SectionUpdateResponseDTO & return
         return new SectionUpdateResponseDTO(
                 findSection.getId(), findSection.getTitle(), findSection.getOrderNo());
+    }
+
+    @Override
+    @Transactional
+    public void removeSection(Long sectionId) {
+        // find section
+        Section findSection =
+                sectionRepository
+                        .findById(sectionId)
+                        .orElseThrow(() -> new IllegalArgumentException("섹션이 존재하지 않습니다."));
+
+        // delete section
+        sectionRepository.deleteById(sectionId);
+
+        // delete lecture by section id
+        lectureRepository.deleteBySectionId(sectionId);
+
+        // orderNo 재정렬 필요
+        sectionRepository.decrementOrderAfterDelete(
+                findSection.getCourse().getId(), findSection.getOrderNo());
     }
 }
