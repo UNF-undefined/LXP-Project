@@ -14,6 +14,9 @@ import jakarta.persistence.MappedSuperclass;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import lombok.Getter;
+
+@Getter
 @MappedSuperclass
 public abstract class BaseEntity implements Serializable {
 
@@ -37,18 +40,6 @@ public abstract class BaseEntity implements Serializable {
     public BaseEntity(LocalDateTime createdAt, LocalDateTime modifiedAt) {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
     }
 
     @Override

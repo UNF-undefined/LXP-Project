@@ -1,4 +1,4 @@
-package com.example.projectlxp.enrollment.dto;
+package com.example.projectlxp.enrollment.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EnrollmentResponseDTO {
+public class CreateEnrollmentResponseDTO {
     private Long enrollmentId;
     private Long userId;
     private String userName;
@@ -21,8 +21,8 @@ public class EnrollmentResponseDTO {
     private String courseTitle;
     private LocalDateTime enrolledAt;
 
-    public static EnrollmentResponseDTO from(Enrollment enrollment) {
-        return EnrollmentResponseDTO.builder()
+    public static CreateEnrollmentResponseDTO from(Enrollment enrollment) {
+        return CreateEnrollmentResponseDTO.builder()
                 .enrollmentId(enrollment.getId())
                 .userId(enrollment.getUser().getId())
                 .userName(enrollment.getUser().getName())
