@@ -25,9 +25,9 @@ class CategoryServiceTest {
     @Test
     void 카테고리를_조회한다() {
         // given
-        Category test1 = Category.builder().id(1L).name("test1").build();
-        Category test2 = Category.builder().id(2L).name("test2").build();
-        Category test3 = Category.builder().id(3L).name("test3").build();
+        Category test1 = Category.builder().name("test1").build();
+        Category test2 = Category.builder().name("test2").build();
+        Category test3 = Category.builder().name("test3").build();
         test1.addChildCategory(test2);
         List<Category> mockCategories = List.of(test1, test3);
 

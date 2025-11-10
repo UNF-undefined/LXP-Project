@@ -54,9 +54,7 @@ public class Category {
     protected Category() {}
 
     @Builder
-    public Category(
-            Long id, String name, boolean isDeleted, Category parent, List<Course> courses) {
-        this.id = id;
+    public Category(String name, boolean isDeleted, Category parent, List<Course> courses) {
         this.name = name;
         this.isDeleted = isDeleted;
         this.parent = parent;

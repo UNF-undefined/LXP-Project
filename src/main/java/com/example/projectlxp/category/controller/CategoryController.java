@@ -11,7 +11,7 @@ import com.example.projectlxp.category.service.CategoryService;
 import com.example.projectlxp.global.dto.BaseResponse;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
