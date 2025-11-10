@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.review.entity.Review;
+import com.example.projectlxp.user.entity.User;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
@@ -18,4 +19,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @return 페이징 처리된 리뷰 목록 (Page<Review>)
      */
     Page<Review> findByCourse(Course course, Pageable pageable);
+
+    /** 특정 유저가 특정 강좌에 대해 리뷰를 작성했는지 확인 */
+    boolean existsByUserAndCourse(User user, Course course);
 }
