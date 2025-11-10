@@ -55,8 +55,10 @@ public class SectionController {
     }
 
     @DeleteMapping("/{sectionId}")
-    public BaseResponse<Void> deleteSection(@PathVariable(name = "sectionId") Long sectionId) {
-        sectionService.removeSection(sectionId);
+    public BaseResponse<Void> deleteSection(
+            @PathVariable(name = "sectionId") Long sectionId,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
+        sectionService.removeSection(tempUserId, sectionId);
         return BaseResponse.success("Deleted Section", null);
     }
 }

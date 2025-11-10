@@ -97,12 +97,17 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void removeSection(Long sectionId) {
+    public void removeSection(Long userId, Long sectionId) {
         // find section
         Section findSection =
                 sectionRepository
                         .findById(sectionId)
                         .orElseThrow(() -> new IllegalArgumentException("섹션이 존재하지 않습니다."));
+
+        // check who created this section
+        if (findSection.getCourse().getInstructor().getId() != userId) {
+            throw new IllegalArgumentException("섹션을 삭제할 권한이 없습니다.");
+        }
 
         // delete section
         sectionRepository.deleteById(sectionId);
