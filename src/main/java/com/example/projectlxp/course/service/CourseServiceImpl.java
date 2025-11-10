@@ -10,6 +10,8 @@ import com.example.projectlxp.course.dto.CourseDTO;
 import com.example.projectlxp.course.dto.CourseResponse;
 import com.example.projectlxp.course.dto.CourseSaveRequest;
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.course.error.CourseNotFoundException;
+import com.example.projectlxp.course.error.CourseNotSavedException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.course.service.validator.CourseValidator;
 import com.example.projectlxp.user.entity.User;
@@ -39,7 +41,7 @@ public class CourseServiceImpl implements CourseService {
                 courseRepository
                         .findByIdAndCategoryIdAndInstructorId(
                                 save.getId(), request.categoryId(), userId)
-                        .orElseThrow(() -> new IllegalArgumentException("강좌 저장에 실패했습니다."));
+                        .orElseThrow(CourseNotSavedException::new);
         return new CourseResponse(CourseDTO.from(course), null);
     }
 
@@ -48,7 +50,7 @@ public class CourseServiceImpl implements CourseService {
         Course course =
                 courseRepository
                         .findByIdWithInstructorAndCategory(courseId)
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌 ID입니다."));
+                        .orElseThrow(CourseNotFoundException::new);
 
         return new CourseResponse(CourseDTO.from(course), null);
     }
