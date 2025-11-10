@@ -74,6 +74,7 @@ public class SectionServiceImpl implements SectionService {
         findSection.updateSection(title, orderNo);
 
         // convert To SectionUpdateResponseDTO & return
-        return new SectionUpdateResponseDTO(findSection.getId(), " ", findSection.getOrderNo());
+        return new SectionUpdateResponseDTO(
+                findSection.getId(), findSection.getTitle(), findSection.getOrderNo());
     }
 }
