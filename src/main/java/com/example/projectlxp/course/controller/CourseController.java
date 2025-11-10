@@ -1,5 +1,7 @@
 package com.example.projectlxp.course.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,11 @@ public class CourseController {
 
     public CourseController(CourseService courseService) {
         this.courseService = courseService;
+    }
+
+    @GetMapping("/{courseId}")
+    public BaseResponse<CourseResponse> search(@PathVariable Long courseId) {
+        return BaseResponse.success(courseService.searchCourse(courseId));
     }
 
     @PostMapping

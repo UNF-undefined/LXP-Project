@@ -67,4 +67,30 @@ class CourseServiceImplTest {
                 () -> assertEquals(1000, courseDTO.price()),
                 () -> assertNull(courseDTO.thumbnail()));
     }
+
+    @Test
+    void 단일_강좌를_조회한다() {
+        // given
+        User instructor = User.builder().name("testName").email("test@test.com").build();
+        Category category = Category.builder().name("testName").build();
+
+        Course course =
+                Course.builder()
+                        .title("testTitle")
+                        .description("testDescription")
+                        .level(CourseLevel.BEGINNER)
+                        .category(category)
+                        .instructor(instructor)
+                        .build();
+
+        // when
+        when(courseRepository.findByIdWithInstructorAndCategory(1L))
+                .thenReturn(Optional.of(course));
+        CourseDTO dto = courseService.searchCourse(1L).course();
+
+        // then
+        assertAll(
+                () -> assertEquals("testTitle", dto.title()),
+                () -> assertEquals("testDescription", dto.description()));
+    }
 }
