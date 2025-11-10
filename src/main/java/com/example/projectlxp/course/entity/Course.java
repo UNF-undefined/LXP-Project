@@ -9,9 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -45,10 +42,6 @@ import lombok.NoArgsConstructor;
 @SQLRestriction("is_deleted = false")
 public class Course extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(nullable = false, unique = true)
     private String title;
 
@@ -58,9 +51,9 @@ public class Course extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int price;
+    private int price = 0;
 
-    @Column private String thumbnail;
+    @Builder.Default @Column private String thumbnail = "default_thumbnail_url.png";
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -86,4 +79,43 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course")
     private List<Review> reviews = new ArrayList<>();
+
+    @Builder
+    public Course(
+            String title,
+            String summary,
+            String description,
+            int price,
+            String thumbnail,
+            CourseLevel level,
+            boolean isDeleted,
+            User instructor,
+            Category category) {
+        this.title = title;
+        this.summary = summary;
+        this.description = description;
+        this.price = price;
+        this.thumbnail = thumbnail;
+        this.level = level;
+        this.isDeleted = isDeleted;
+        this.instructor = instructor;
+        this.category = category;
+    }
+
+    public void updateCourse(
+            String title,
+            String summary,
+            String description,
+            int price,
+            String thumbnail,
+            CourseLevel level,
+            Category category) {
+        this.title = title;
+        this.summary = summary;
+        this.description = description;
+        this.price = price;
+        this.thumbnail = thumbnail;
+        this.level = level;
+        this.category = category;
+    }
 }
