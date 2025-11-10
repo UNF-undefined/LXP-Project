@@ -10,6 +10,8 @@ import com.example.projectlxp.course.dto.CourseDTO;
 import com.example.projectlxp.course.dto.CourseResponse;
 import com.example.projectlxp.course.dto.CourseSaveRequest;
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.course.error.CourseNotFoundException;
+import com.example.projectlxp.course.error.CourseNotSavedException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.course.service.validator.CourseValidator;
 import com.example.projectlxp.user.entity.User;
@@ -17,6 +19,7 @@ import com.example.projectlxp.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
@@ -38,7 +41,17 @@ public class CourseServiceImpl implements CourseService {
                 courseRepository
                         .findByIdAndCategoryIdAndInstructorId(
                                 save.getId(), request.categoryId(), userId)
-                        .orElseThrow(() -> new IllegalArgumentException("강좌 저장에 실패했습니다."));
+                        .orElseThrow(CourseNotSavedException::new);
+        return new CourseResponse(CourseDTO.from(course), null);
+    }
+
+    @Override
+    public CourseResponse searchCourse(Long courseId) {
+        Course course =
+                courseRepository
+                        .findByIdWithInstructorAndCategory(courseId)
+                        .orElseThrow(CourseNotFoundException::new);
+
         return new CourseResponse(CourseDTO.from(course), null);
     }
 }
