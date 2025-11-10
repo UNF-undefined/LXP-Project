@@ -50,5 +50,4 @@ public class ReviewServiceImpl implements ReviewService {
         // 변환된 DTO 페이지를 Controller에게 반환
         return dtoPage;
     }
-
 }

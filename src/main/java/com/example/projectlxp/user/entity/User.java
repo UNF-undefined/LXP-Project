@@ -29,7 +29,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id = ?")
