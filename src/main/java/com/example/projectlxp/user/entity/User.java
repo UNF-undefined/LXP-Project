@@ -29,7 +29,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id = ?")
@@ -76,5 +75,10 @@ public class User extends BaseEntity {
         this.email = email;
         this.hashedPassword = hashedPassword;
         this.profileImage = profileImage;
+    }
+
+    public static User createUser(
+            String name, String email, String hashedPassword, Role role, String profileImage) {
+        return new User(name, role, email, hashedPassword, profileImage);
     }
 }
