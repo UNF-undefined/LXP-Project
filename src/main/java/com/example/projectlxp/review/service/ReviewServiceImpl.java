@@ -51,11 +51,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /** '리뷰 작성' 메서드 */
-    @Transactional // ★ '쓰기'용 트랜잭션 (readOnly = false)
+    @Transactional
     @Override
     public ReviewResponseDTO createReview(Long courseId, ReviewRequestDTO requestDTO, Long userId) {
 
-        // 1. 엔티티 조회
         User user =
                 userRepository
                         .findById(userId)
@@ -126,5 +125,32 @@ public class ReviewServiceImpl implements ReviewService {
 
             throw new RuntimeException("해당 리뷰에 대한 권한이 없습니다.");
         }
+    }
+
+    @Transactional
+    @Override
+    public ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO requestDTO, Long userId) {
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
+
+        Review review =
+                reviewRepository
+                        .findById(reviewId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+
+        this.checkReviewOwner(review, user);
+
+        review.updateReview(requestDTO.getContent(), requestDTO.getRating());
+
+        return new ReviewResponseDTO(review);
     }
 }
