@@ -15,7 +15,8 @@ import com.example.projectlxp.category.repository.CategoryRepository;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.entity.CourseLevel;
 import com.example.projectlxp.course.repository.CourseRepository;
-import com.example.projectlxp.enrollment.dto.EnrollmentResponseDTO;
+import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
+import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
 import com.example.projectlxp.user.entity.Role;
@@ -48,13 +49,14 @@ class EnrollmentServiceImplTest {
         Course course = courseRepository.save(createCourse(user1, category));
 
         User user2 = userRepository.save(createUser("test2@test.com"));
+        CreateEnrollmentRequestDTO requestDTO = new CreateEnrollmentRequestDTO(course.getId());
 
         // when
-        EnrollmentResponseDTO enrollmentResponseDTO =
-                enrollmentService.enrollCourse(user2.getId(), course.getId());
+        CreateEnrollmentResponseDTO createEnrollmentResponseDTO =
+                enrollmentService.enrollCourse(user2.getId(), requestDTO);
 
         // then
-        assertThat(enrollmentResponseDTO)
+        assertThat(createEnrollmentResponseDTO)
                 .extracting("userId", "courseId")
                 .contains(user2.getId(), course.getId());
     }
@@ -70,9 +72,10 @@ class EnrollmentServiceImplTest {
         User user2 = userRepository.save(createUser("test2@test.com"));
         Enrollment enrollment = createEnrollment(user2, course);
         enrollmentRepository.save(enrollment);
+        CreateEnrollmentRequestDTO requestDTO = new CreateEnrollmentRequestDTO(course.getId());
 
         // when - then
-        assertThatThrownBy(() -> enrollmentService.enrollCourse(user2.getId(), course.getId()))
+        assertThatThrownBy(() -> enrollmentService.enrollCourse(user2.getId(), requestDTO))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("이미 등록된 강좌입니다. 회원 ID: " + user2.getId() + ", 강좌 ID: " + course.getId());
     }

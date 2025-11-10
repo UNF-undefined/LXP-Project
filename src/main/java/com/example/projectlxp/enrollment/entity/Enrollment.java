@@ -57,6 +57,9 @@ public class Enrollment extends BaseEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    @Column(name = "is_hidden", nullable = false)
+    private boolean isHidden = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

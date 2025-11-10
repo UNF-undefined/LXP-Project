@@ -16,6 +16,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import lombok.Getter;
+
+@Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity implements Serializable {
@@ -40,18 +43,6 @@ public abstract class BaseEntity implements Serializable {
     public BaseEntity(LocalDateTime createdAt, LocalDateTime modifiedAt) {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
     }
 
     @Override
