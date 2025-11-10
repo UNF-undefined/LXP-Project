@@ -52,12 +52,17 @@ public class Category {
     }
 
     @Builder
-    public Category(Long id, String name, boolean isDeleted, Category parent, List<Category> children, List<Course> courses) {
+    public Category(Long id, String name, boolean isDeleted, Category parent, List<Course> courses) {
         this.id = id;
         this.name = name;
         this.isDeleted = isDeleted;
         this.parent = parent;
-        this.children = children;
         this.courses = courses;
     }
+
+    public void addChildCategory(Category child) {
+        this.children.add(child);
+        child.parent = this;
+    }
+
 }
