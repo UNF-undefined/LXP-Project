@@ -1,5 +1,6 @@
 package com.example.projectlxp.review.service;
 
+import com.example.projectlxp.global.error.CustomBusinessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(courseId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
@@ -60,7 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(userId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 유저를 찾을 수 없습니다. id=" + userId));
 
         Course course =
@@ -68,17 +69,17 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(courseId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         boolean isEnrolled = enrollmentRepository.existsByUserAndCourse(user, course);
         if (!isEnrolled) {
-            throw new RuntimeException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
+            throw new CustomBusinessException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
         }
 
         boolean hasReviewed = reviewRepository.existsByUserAndCourse(user, course);
         if (hasReviewed) {
-            throw new RuntimeException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
+            throw new CustomBusinessException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
         }
 
         Review newReview =
@@ -103,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(userId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 유저를 찾을 수 없습니다. id=" + userId));
 
         Review review =
@@ -111,7 +112,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(reviewId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
 
         this.checkReviewOwner(review, user);
@@ -136,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(userId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 유저를 찾을 수 없습니다. id=" + userId));
 
         Review review =
@@ -144,7 +145,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .findById(reviewId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new CustomBusinessException(
                                                 "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
 
         this.checkReviewOwner(review, user);
