@@ -15,6 +15,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+import com.example.projectlxp.user.dto.CustomUserDetails;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -40,6 +42,16 @@ public class JwtTokenProvider {
 
     // 토큰 생성 메서드 (로그인 성공 시 호출됨)
     public String createToken(Authentication authentication) {
+
+        // Authentication 객체에서 Principal을 꺼냅니다.
+        Object principal = authentication.getPrincipal();
+
+        // Principal을 CustomUserDetails로 형변환
+        CustomUserDetails userDetails = (CustomUserDetails) principal;
+
+        // CustomUserDetails에 저장해둔 PK를 꺼냄
+        Long userId = userDetails.getUserId(); // PK(id)가져오기 성공
+
         // Authentication 객체에서 권한 정보 가져오기
         String authorities =
                 authentication.getAuthorities().stream()
@@ -52,6 +64,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(authentication.getName()) // 로그인 할 아이디, email
                 .claim(AUTHORITIES_KEY, authorities) // 권한정보
+                .claim("userId", userId) // 가져온 PK를 클레임에 추가
                 .signWith(key, SignatureAlgorithm.HS512) // 비밀키로 서명
                 .setExpiration(validity) // 만료시간 설정
                 .compact();
