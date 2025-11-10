@@ -1,6 +1,8 @@
 package com.example.projectlxp.user.service;
 
+import com.example.projectlxp.user.dto.TokenResponseDTO;
 import com.example.projectlxp.user.dto.UserJoinRequestDTO;
+import com.example.projectlxp.user.dto.UserLoginRequestDTO;
 
 public interface UserService {
 
@@ -10,4 +12,7 @@ public interface UserService {
      * */
 
     void join(UserJoinRequestDTO requestDTO);
+
+    // 로그인
+    TokenResponseDTO login(UserLoginRequestDTO requestDTO);
 }
