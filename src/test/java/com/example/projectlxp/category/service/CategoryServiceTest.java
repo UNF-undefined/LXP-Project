@@ -18,7 +18,7 @@ import com.example.projectlxp.category.repository.CategoryRepository;
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
-    @InjectMocks private CategoryService categoryService;
+    @InjectMocks private CategoryServiceImpl categoryService;
 
     @Mock private CategoryRepository categoryRepository;
 
