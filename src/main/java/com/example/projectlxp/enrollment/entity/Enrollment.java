@@ -20,14 +20,19 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.user.entity.User;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(
         name = "enrollments",
@@ -36,7 +41,7 @@ import lombok.NoArgsConstructor;
                     name = "UK_enrollment_user_course",
                     columnNames = {"user_id", "course_id"})
         })
-public class Enrollment {
+public class Enrollment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +49,7 @@ public class Enrollment {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int progress;
+    private int progress = 0;
 
     @Column(name = "last_viewed_at")
     private LocalDateTime lastViewedAt;

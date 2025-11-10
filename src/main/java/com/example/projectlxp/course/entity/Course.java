@@ -24,21 +24,26 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.enrollment.entity.Enrollment;
+import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.review.entity.Review;
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.user.entity.User;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "courses")
 @SQLDelete(sql = "UPDATE courses SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-public class Course {
+public class Course extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
