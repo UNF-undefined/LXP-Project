@@ -1,7 +1,8 @@
 package com.example.projectlxp.global.dto;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
 
 @Getter
 public class PageResponse<T> extends BaseResponse<T> {

@@ -1,8 +1,5 @@
 package com.example.projectlxp.review.service;
 
-import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
-import com.example.projectlxp.global.dto.PageDTO;
-import com.example.projectlxp.global.dto.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,6 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.repository.CourseRepository;
+import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
+import com.example.projectlxp.global.dto.PageDTO;
+import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.entity.Review;
@@ -31,16 +31,19 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final EnrollmentRepository enrollmentRepository;
 
-
     @Override
     public PageResponse<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 강좌를 찾을 수 없습니다. id=" + courseId));
+        Course course =
+                courseRepository
+                        .findById(courseId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
 
         Page<ReviewResponseDTO> dtoPage = reviewPage.map(ReviewResponseDTO::new);
-
 
         PageDTO pageInfo = PageDTO.of(dtoPage);
 
@@ -69,10 +72,8 @@ public class ReviewServiceImpl implements ReviewService {
                                         new IllegalArgumentException(
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
-
-
-         boolean isEnrolled = enrollmentRepository.existsByUserAndCourse(user, course);
-         if (!isEnrolled) {
+        boolean isEnrolled = enrollmentRepository.existsByUserAndCourse(user, course);
+        if (!isEnrolled) {
             throw new RuntimeException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
         }
 

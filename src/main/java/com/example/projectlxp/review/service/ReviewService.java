@@ -1,9 +1,8 @@
 package com.example.projectlxp.review.service;
 
-import com.example.projectlxp.global.dto.PageResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 

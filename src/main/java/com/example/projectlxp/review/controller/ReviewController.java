@@ -1,7 +1,7 @@
 package com.example.projectlxp.review.controller;
 
-import com.example.projectlxp.global.dto.PageResponse;
 import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
+import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.service.ReviewService;
@@ -35,9 +36,7 @@ public class ReviewController {
     // 리뷰 작성
     @PostMapping("/courses/{courseId}")
     public BaseResponse<ReviewResponseDTO> createReview(
-
             @PathVariable Long courseId,
-
             @Valid @RequestBody ReviewRequestDTO requestDTO,
 
             // Security 대신 '1번 유저'가 썼다고 가정하고 임시 ID를 받음
