@@ -72,7 +72,8 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionUpdateResponseDTO modifySection(Long sectionId, String title, int orderNo) {
+    public SectionUpdateResponseDTO modifySection(
+            Long userId, Long sectionId, String title, int orderNo) {
         // TODO : order No가 이미 존재하면, 이미 존재하는 orderNO를 변경해야 하나 ?!
 
         // find Section By ID
@@ -80,6 +81,11 @@ public class SectionServiceImpl implements SectionService {
                 sectionRepository
                         .findById(sectionId)
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Section 입니다."));
+
+        // check who created this section.
+        if (findSection.getCourse().getInstructor().getId() != userId) {
+            throw new IllegalArgumentException("섹션을 업데이트 할 권한이 없습니다.");
+        }
 
         // update Section
         findSection.updateSection(title, orderNo);

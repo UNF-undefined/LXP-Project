@@ -24,7 +24,7 @@ public interface SectionService {
      * @param orderNo 섹션의 순서
      * @return SectionUpdateResponseDTO
      */
-    SectionUpdateResponseDTO modifySection(Long sectionId, String title, int orderNo);
+    SectionUpdateResponseDTO modifySection(Long userId, Long sectionId, String title, int orderNo);
 
     /**
      * 섹션을 삭제합니다. - 섹션이 삭제되면 관련 Lecture도 삭제됩니다. - 중간 섹션을 삭제하면 orderNo가 재정렬 됩니다.

@@ -45,10 +45,11 @@ public class SectionController {
     @PutMapping("/{sectionId}")
     public BaseResponse<SectionUpdateResponseDTO> updateSection(
             @PathVariable(name = "sectionId") Long sectionId,
-            @RequestBody @Valid SectionUpdateRequestDTO request) {
+            @RequestBody @Valid SectionUpdateRequestDTO request,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
 
         SectionUpdateResponseDTO updatedSection =
-                sectionService.modifySection(sectionId, request.title, request.orderNo);
+                sectionService.modifySection(tempUserId, sectionId, request.title, request.orderNo);
 
         return BaseResponse.success(updatedSection);
     }
