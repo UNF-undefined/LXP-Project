@@ -25,4 +25,12 @@ public interface ReviewService {
      * @return 생성된 리뷰의 상세 DTO
      */
     ReviewResponseDTO createReview(Long courseId, ReviewRequestDTO requestDTO, Long userId);
+
+    /**
+     * [ #37 ] 리뷰 삭제
+     *
+     * @param reviewId 삭제할 리뷰의 ID
+     * @param userId (임시) 삭제를 요청한 유저의 ID
+     */
+    void deleteReview(Long reviewId, Long userId);
 }

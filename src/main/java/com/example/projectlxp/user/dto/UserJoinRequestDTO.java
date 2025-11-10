@@ -36,12 +36,11 @@ public class UserJoinRequestDTO {
 
     // "STUDENT" 또는 "INSTRUCTOR" 문자열로 받습니다.
     @NotBlank(message = "역할은 필수 항목입니다.")
-
     @Pattern(
             regexp = "(?i)^(STUDENT|INSTRUCTOR)$",
-            message = "역할은 'STUDENT' 또는 'INSTRUCTOR'만 가능합니다."
-    )
+            message = "역할은 'STUDENT' 또는 'INSTRUCTOR'만 가능합니다.")
     private String role;
+
     private String profileImage;
 
     // -- Entity 변환 로직 (Service에서 사용) ---
