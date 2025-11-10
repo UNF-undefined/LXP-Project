@@ -94,4 +94,33 @@ public class ReviewServiceImpl implements ReviewService {
 
         return new ReviewResponseDTO(savedReview);
     }
+
+    @Transactional
+    @Override
+    public void deleteReview(Long reviewId, Long userId) {
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
+
+        Review review =
+                reviewRepository
+                        .findById(reviewId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+
+        Long reviewOwnerId = review.getUser().getId();
+
+        if (!reviewOwnerId.equals(userId)) {
+            throw new RuntimeException("리뷰를 삭제할 권한이 없습니다.");
+        }
+
+        reviewRepository.delete(review);
+    }
 }

@@ -3,6 +3,7 @@ package com.example.projectlxp.review.controller;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +48,14 @@ public class ReviewController {
                 reviewService.createReview(courseId, requestDTO, tempUserId);
 
         return BaseResponse.success(responseDTO);
+    }
+
+    @DeleteMapping("/{reviewId}")
+    public BaseResponse<Void> deleteReview(
+            @PathVariable Long reviewId,
+            @RequestParam(defaultValue = "1") Long tempUserId // (임시) 임시 유저 ID를 받음
+            ) {
+        reviewService.deleteReview(reviewId, tempUserId);
+        return BaseResponse.success(null);
     }
 }
