@@ -65,4 +65,30 @@ public class Lecture extends BaseEntity {
 
     @OneToMany(mappedBy = "lecture")
     private List<LectureProgress> lectureProgresses = new ArrayList<>();
+
+    // Factory Method
+    private Lecture(
+            String title,
+            LectureType type,
+            int orderNo,
+            String fileURL,
+            Section section,
+            String duration) {
+        this.title = title;
+        this.type = type;
+        this.orderNo = orderNo;
+        this.file = fileURL;
+        this.section = section;
+        this.duration = duration;
+    }
+
+    public static Lecture createLecture(
+            String title,
+            LectureType type,
+            int orderNo,
+            String fileURL,
+            Section section,
+            String duration) {
+        return new Lecture(title, type, orderNo, fileURL, section, duration);
+    }
 }
