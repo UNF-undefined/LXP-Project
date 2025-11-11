@@ -14,9 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component // 빈으로 등록
 @RequiredArgsConstructor // final 필드 주입
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -44,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /*
-     * Request Header 에서 Authorization 키를 찾아 토큰을 추춫ㄹ하는 메서드
+     * Request Header 에서 Authorization 키를 찾아 토큰을 추출하는 메서드
      * */
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
