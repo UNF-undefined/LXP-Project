@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.projectlxp.content.service.ContentService;
+import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
-import com.example.projectlxp.lecture.controller.dto.UploadFileInfoDTO;
 import com.example.projectlxp.lecture.entity.LectureType;
 
 @Service

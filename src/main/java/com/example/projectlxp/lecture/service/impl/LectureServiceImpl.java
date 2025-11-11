@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.projectlxp.content.service.ContentService;
+import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
-import com.example.projectlxp.lecture.controller.dto.UploadFileInfoDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
@@ -61,11 +61,11 @@ public class LectureServiceImpl implements LectureService {
         Lecture newLecture =
                 Lecture.createLecture(
                         title,
-                        fileInfo.fileType,
+                        fileInfo.fileType(),
                         orderNo,
-                        fileInfo.fileURL,
+                        fileInfo.fileURL(),
                         findSection,
-                        fileInfo.videoDuration);
+                        fileInfo.videoDuration());
 
         Lecture savedLecture = lectureRepository.save(newLecture);
 

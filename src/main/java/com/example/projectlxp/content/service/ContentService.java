@@ -2,7 +2,7 @@ package com.example.projectlxp.content.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.projectlxp.lecture.controller.dto.UploadFileInfoDTO;
+import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 
 public interface ContentService {
 
