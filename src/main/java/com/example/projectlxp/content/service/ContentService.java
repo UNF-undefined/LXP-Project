@@ -1,4 +1,4 @@
-package com.example.projectlxp.lecture.service;
+package com.example.projectlxp.content.service;
 
 import org.springframework.web.multipart.MultipartFile;
 

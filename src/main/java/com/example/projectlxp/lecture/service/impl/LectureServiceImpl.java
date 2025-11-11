@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.controller.dto.UploadFileInfoDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
-import com.example.projectlxp.lecture.service.ContentService;
 import com.example.projectlxp.lecture.service.LectureService;
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.section.repository.SectionRepository;
@@ -21,8 +21,6 @@ public class LectureServiceImpl implements LectureService {
 
     private LectureRepository lectureRepository;
     private SectionRepository sectionRepository;
-
-    // LectureService가 ContentService보다 더 상위 개념이어서 같은 Service layer여도 의존성이 가능하다 !
     private ContentService contentService;
 
     @Autowired

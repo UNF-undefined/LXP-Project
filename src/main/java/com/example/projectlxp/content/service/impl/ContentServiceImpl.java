@@ -1,4 +1,4 @@
-package com.example.projectlxp.lecture.service.impl;
+package com.example.projectlxp.content.service.impl;
 
 import java.io.InputStream;
 
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.controller.dto.UploadFileInfoDTO;
 import com.example.projectlxp.lecture.entity.LectureType;
-import com.example.projectlxp.lecture.service.ContentService;
 
 @Service
 public class ContentServiceImpl implements ContentService {
