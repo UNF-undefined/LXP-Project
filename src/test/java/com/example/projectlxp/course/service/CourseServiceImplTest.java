@@ -1,10 +1,14 @@
 package com.example.projectlxp.course.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -22,6 +26,7 @@ import com.example.projectlxp.course.dto.CourseSaveRequest;
 import com.example.projectlxp.course.dto.CourseUpdateRequest;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.entity.CourseLevel;
+import com.example.projectlxp.course.error.CourseNotFoundException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.course.service.validator.CourseValidator;
 import com.example.projectlxp.user.entity.User;
@@ -132,5 +137,37 @@ class CourseServiceImplTest {
                 () -> assertEquals("updatedDescription", dto.description()),
                 () -> assertEquals(CourseLevel.INTERMEDIATE.name(), dto.level()),
                 () -> assertEquals(2000, dto.price()));
+    }
+
+    @Test
+    void 강좌를_삭제한다() {
+        User instructor = User.builder().name("testName").email("test@test.com").build();
+        Category category = Category.builder().name("testName").build();
+
+        Course course =
+                Course.builder()
+                        .title("testTitle")
+                        .description("testDescription")
+                        .level(CourseLevel.BEGINNER)
+                        .category(category)
+                        .instructor(instructor)
+                        .build();
+
+        when(courseRepository.findByIdAndInstructorId(anyLong(), anyLong()))
+                .thenReturn(Optional.of(course));
+        Boolean result = courseService.deleteCourse(1L, 1L);
+
+        assertAll(
+                () -> assertEquals(true, result),
+                () -> verify(courseRepository, times(1)).delete(course));
+    }
+
+    @Test
+    void 강좌가_없으면_예외를_발생시킨다() {
+        when(courseRepository.findByIdAndInstructorId(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> courseService.deleteCourse(1L, 1L))
+                .isInstanceOf(CourseNotFoundException.class);
     }
 }

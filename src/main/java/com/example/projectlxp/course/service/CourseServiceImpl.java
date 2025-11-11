@@ -85,4 +85,15 @@ public class CourseServiceImpl implements CourseService {
                 category);
         return CourseDTO.from(course);
     }
+
+    @Override
+    @Transactional
+    public Boolean deleteCourse(Long courseId, Long userId) {
+        Course course =
+                courseRepository
+                        .findByIdAndInstructorId(courseId, userId)
+                        .orElseThrow(CourseNotFoundException::new);
+        courseRepository.delete(course);
+        return true;
+    }
 }
