@@ -3,6 +3,7 @@ package com.example.projectlxp.review.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.review.entity.Review;
@@ -18,6 +19,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @param pageable 페이징 및 정렬 정보
      * @return 페이징 처리된 리뷰 목록 (Page<Review>)
      */
+    @Query(
+            value = "SELECT r FROM Review r LEFT JOIN FETCH r.user u WHERE r.course = :course",
+            countQuery = "SELECT COUNT(r) FROM Review r WHERE r.course = :course")
     Page<Review> findByCourse(Course course, Pageable pageable);
 
     /** 특정 유저가 특정 강좌에 대해 리뷰를 작성했는지 확인 */

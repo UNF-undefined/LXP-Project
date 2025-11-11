@@ -1,5 +1,7 @@
 package com.example.projectlxp.review.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
@@ -29,7 +31,7 @@ public class ReviewController {
 
     // 강좌 별 리뷰 조회
     @GetMapping("/courses/{courseId}")
-    public PageResponse<ReviewResponseDTO> getReviewsByCourse(
+    public PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(
             @PathVariable Long courseId, Pageable pageable) {
 
         return reviewService.getReviewsByCourse(courseId, pageable);
