@@ -29,7 +29,11 @@ public class LectureController {
             throws Exception {
         LectureCreateResponseDTO response =
                 lectureService.registerLecture(
-                        userId, request.sectionId, request.title, request.orderNo, request.file);
+                        userId,
+                        request.sectionId(),
+                        request.title(),
+                        request.orderNo(),
+                        request.file());
         return BaseResponse.success(response);
     }
 }
