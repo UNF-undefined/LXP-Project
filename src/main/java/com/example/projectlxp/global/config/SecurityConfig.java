@@ -9,16 +9,25 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.projectlxp.global.jwt.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     // 비밀번호 암호화 도구 (PasswordEncoder)를 Bean으로 등록
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -28,9 +37,9 @@ public class SecurityConfig {
     // 보안 규칙 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (API서버)
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
+        return http.csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화 (API서버)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
 
                 // 세션 정책 추가 (API서버는 STATELESS 권장
                 .sessionManagement(
@@ -75,8 +84,10 @@ public class SecurityConfig {
                                         .authenticated() // 정보조회,수정은 인증필요
                                         .anyRequest()
                                         .authenticated() // 그 외 모든 요청은 인증 필요
-                        );
-        return http.build(); // http 객체를 build() 해서 반환
+                        )
+                .addFilterBefore(
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean

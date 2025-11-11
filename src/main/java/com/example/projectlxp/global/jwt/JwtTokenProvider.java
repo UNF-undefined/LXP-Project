@@ -27,21 +27,27 @@ public class JwtTokenProvider {
 
     private final SecretKey key;
     private final long accessTokenExpirationMs;
+    private final long freshTokenExpirationMs;
 
     private static final String AUTHORITIES_KEY = "auth";
+    private static final String USER_ID_KEY = "userId";
 
     // applcation-locla.yml 에서 설정 값 가져오기
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.access-token-expiration-ms}") long accessTokenExpirationMs) {
+            @Value("${jwt.access-token-expiration-ms}") long accessTokenExpirationMs,
+            // Refresh token 만료 시간 주입
+            @Value("${jwt.refresh-token-expiration-ms}") long freshTokenExpirationMs) {
 
         // yml의 secret 문자열을 SecretKry 객체로 변환
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.accessTokenExpirationMs = accessTokenExpirationMs;
+        // 필드 값 할당
+        this.freshTokenExpirationMs = freshTokenExpirationMs;
     }
 
     // 토큰 생성 메서드 (로그인 성공 시 호출됨)
-    public String createToken(Authentication authentication) {
+    public String createAccessToken(Authentication authentication) {
 
         // Authentication 객체에서 Principal을 꺼냅니다.
         Object principal = authentication.getPrincipal();
@@ -59,14 +65,26 @@ public class JwtTokenProvider {
                         .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        Date validity = new Date(now + this.accessTokenExpirationMs); // 만료시간
+        Date validity = new Date(now + this.accessTokenExpirationMs); // 만료시간(짧음)
 
         return Jwts.builder()
                 .setSubject(authentication.getName()) // 로그인 할 아이디, email
                 .claim(AUTHORITIES_KEY, authorities) // 권한정보
-                .claim("userId", userId) // 가져온 PK를 클레임에 추가
+                .claim(USER_ID_KEY, userId) // 가져온 PK를 클레임에 추가
                 .signWith(key, SignatureAlgorithm.HS512) // 비밀키로 서명
                 .setExpiration(validity) // 만료시간 설정
+                .compact();
+    }
+
+    public String createRefreshToken(Authentication authentication) {
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.freshTokenExpirationMs); // 만료시간(김)
+
+        return Jwts.builder()
+                .setSubject(authentication.getName()) // 로그인할 아이디 email
+                .setExpiration(validity)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 

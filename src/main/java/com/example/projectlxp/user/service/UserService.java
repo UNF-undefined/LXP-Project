@@ -14,5 +14,10 @@ public interface UserService {
     void join(UserJoinRequestDTO requestDTO);
 
     // 로그인
+
     TokenResponseDTO login(UserLoginRequestDTO requestDTO);
+
+    // 정보 조회
+
+    // 정보수정
 }

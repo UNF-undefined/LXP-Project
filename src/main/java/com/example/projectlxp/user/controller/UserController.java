@@ -32,9 +32,10 @@ public class UserController {
 
     // 로그인 API
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDTO> lgoin(
+    public ResponseEntity<TokenResponseDTO> login(
             @Validated @RequestBody UserLoginRequestDTO requestDTO) {
-        String jwtToken = userService.login(requestDTO);
-        return ResponseEntity.ok(new TokenResponseDTO(jwtToken));
+
+        TokenResponseDTO tokenDTO = userService.login(requestDTO);
+        return ResponseEntity.ok(tokenDTO);
     }
 }

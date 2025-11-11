@@ -5,6 +5,9 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import lombok.Getter;
+
+@Getter
 public class CustomUserDetails extends User {
 
     private final Long userId;
@@ -18,9 +21,5 @@ public class CustomUserDetails extends User {
         // 부모클래스 생성자 호출
         super(email, password, authorities);
         this.userId = userId;
-    }
-
-    public Long getUserId() {
-        return userId;
     }
 }

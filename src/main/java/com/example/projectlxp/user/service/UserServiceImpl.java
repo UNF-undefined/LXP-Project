@@ -1,12 +1,9 @@
 package com.example.projectlxp.user.service;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,26 +15,16 @@ import com.example.projectlxp.user.dto.UserLoginRequestDTO;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    // 로그인
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-
-    public UserServiceImpl(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            @Lazy AuthenticationManager authenticationManager,
-            JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     // 회원가입
     @Override
@@ -49,29 +36,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
         User newUser = requestDTO.toEntity(passwordEncoder);
         userRepository.save(newUser);
-    }
-
-    // 로그인 (loadUserByUsername)
-    // spring Security가 인증 시 호출
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        // ID 대신 email을 사용하여 , email로 User를 찾음
-        User user =
-                userRepository
-                        .findByEmail(username)
-                        .orElseThrow(
-                                () ->
-                                        new UsernameNotFoundException(
-                                                "해당 이메일을 찾을 수 없습니다:" + username));
-
-        // spring Security UserDetails 객체로 변환하여 반환
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail()) // 로그인 ID
-                .password(user.getHashedPassword()) // DB에 저장된 암호화된 PW
-                .roles(user.getRole().name()) // 권한
-                .build();
     }
 
     // 로그인 - Controller가 토큰 발급 시 호출
@@ -86,10 +50,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         // AuthenticationManager로 인증 (loadUserByUsername 호출 및 비번 비교
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         String accessToken = jwtTokenProvider.createAccessToken(authentication); // 액세스 토큰 발급
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication); // 리프레쉬 토큰 발급
 
-        // 인증 성공 시 , JWT 토큰 생성
+        // 인증 성공 시 DTO에 두 토큰 생성
         return new TokenResponseDTO(accessToken, refreshToken);
     }
 }
