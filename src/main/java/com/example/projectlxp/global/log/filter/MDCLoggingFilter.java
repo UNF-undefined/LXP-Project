@@ -39,7 +39,7 @@ public class MDCLoggingFilter implements Filter {
 
             long duration = System.currentTimeMillis() - startTime;
             log.info(
-                    "--> {} {} {} ({}ms)",
+                    "<-- {} {} {} ({}ms)",
                     httpResponse.getStatus(),
                     httpRequest.getMethod(),
                     httpRequest.getRequestURI(),
