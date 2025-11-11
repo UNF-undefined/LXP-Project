@@ -88,20 +88,17 @@ public class LectureServiceImpl implements LectureService {
         lectureValidator.validateLectureModifyInfo(modifyInfo);
 
         // find Lecture
-        Lecture findLecture =
-                lectureRepository
-                        .findById(modifyInfo.getLectureId())
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        Lecture findLecture = findLectureAndException(modifyInfo.getLectureId());
+
+        // validate Lecture authority
+        lectureValidator.validateLectureAuthority(
+                findLecture.getSection().getCourse().getInstructor().getId(),
+                modifyInfo.getUserId());
+
+        // setup info
         Long sectionId = findLecture.getSection().getId();
         int oldOrderNo = findLecture.getOrderNo();
         int newOrderNo = modifyInfo.getOrderNo();
-
-        // validate Lecture authority
-        Long instructorId = findLecture.getSection().getCourse().getInstructor().getId();
-        lectureValidator.validateLectureAuthority(instructorId, modifyInfo.getUserId());
 
         // orderNo reorder
         if (newOrderNo < oldOrderNo) {
@@ -112,13 +109,19 @@ public class LectureServiceImpl implements LectureService {
 
         // TODO : section을 변경하면 옮기는 section 내부에서의 orderNo도 변경되어야 해서 현재 보류
         // update Lecture
-        Lecture updatedLecture =
-                findLecture.updateLecture(modifyInfo.getTitle(), modifyInfo.getOrderNo());
+        Lecture updatedLecture = findLecture.updateLecture(modifyInfo.getTitle(), newOrderNo);
 
         // convertDTO and return
         return new LectureUpdateResponseDTO(
                 updatedLecture.getSection().getId(),
                 updatedLecture.getTitle(),
                 updatedLecture.getOrderNo());
+    }
+
+    private Lecture findLectureAndException(Long lectureId) {
+        return lectureRepository
+                .findById(lectureId)
+                .orElseThrow(
+                        () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }
