@@ -7,6 +7,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +45,10 @@ public class LectureServiceImpl implements LectureService {
         Section findSection =
                 sectionRepository
                         .findByIdWithCourseAndInstructor(sectionId)
-                        .orElseThrow(() -> new CustomBusinessException("없는 세션입니다."));
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "없는 세션입니다.", HttpStatus.NOT_FOUND));
 
         // check who create this lecture
         System.out.println(findSection.getCourse().getInstructor().getId());
