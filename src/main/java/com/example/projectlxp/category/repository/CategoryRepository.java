@@ -1,6 +1,7 @@
 package com.example.projectlxp.category.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,4 +14,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c JOIN FETCH c.children WHERE c.parent IS NULL")
     List<Category> findAllCategoryOptimize();
+
+    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.parent WHERE c.id = :categoryId")
+    Optional<Category> findByIdOptimize(Long categoryId);
 }
