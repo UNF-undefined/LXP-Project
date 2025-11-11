@@ -1,5 +1,7 @@
 package com.example.projectlxp.review.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
@@ -20,8 +22,6 @@ import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

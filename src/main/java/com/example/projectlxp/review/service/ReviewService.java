@@ -1,12 +1,12 @@
 package com.example.projectlxp.review.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
-
-import java.util.List;
 
 public interface ReviewService {
     /**
