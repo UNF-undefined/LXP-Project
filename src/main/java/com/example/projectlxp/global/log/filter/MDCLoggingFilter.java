@@ -24,7 +24,7 @@ public class MDCLoggingFilter implements Filter {
     public void doFilter(
             ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
-        String requestId = "REQUEST_ID_" + createUUID();
+        String requestId = "request-" + createUUID();
         long startTime = System.currentTimeMillis();
 
         try {
