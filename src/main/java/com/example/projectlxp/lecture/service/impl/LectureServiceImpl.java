@@ -13,6 +13,7 @@ import com.example.projectlxp.lecture.controller.dto.response.LectureCreateRespo
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
 import com.example.projectlxp.lecture.service.LectureService;
+import com.example.projectlxp.lecture.service.validator.LectureValidator;
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.section.repository.SectionRepository;
 
@@ -22,15 +23,18 @@ public class LectureServiceImpl implements LectureService {
     private LectureRepository lectureRepository;
     private SectionRepository sectionRepository;
     private ContentService contentService;
+    private LectureValidator lectureValidator;
 
     @Autowired
     public LectureServiceImpl(
             LectureRepository lectureRepository,
             SectionRepository sectionRepository,
-            ContentService contentService) {
+            ContentService contentService,
+            LectureValidator lectureValidator) {
         this.lectureRepository = lectureRepository;
         this.sectionRepository = sectionRepository;
         this.contentService = contentService;
+        this.lectureValidator = lectureValidator;
     }
 
     @Override
@@ -49,10 +53,8 @@ public class LectureServiceImpl implements LectureService {
                                                 "없는 세션입니다.", HttpStatus.NOT_FOUND));
 
         // check who create this lecture
-        System.out.println(findSection.getCourse().getInstructor().getId());
-        if (!findSection.getCourse().getInstructor().getId().equals(userId)) {
-            throw new CustomBusinessException("강의 등록 권한이 없습니다.");
-        }
+        lectureValidator.validateLectureAuthority(
+                findSection.getCourse().getInstructor().getId(), userId);
 
         // convert File Info DTO
         UploadFileInfoDTO fileInfo = contentService.uploadFile(file);
