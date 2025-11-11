@@ -14,22 +14,26 @@ import com.example.projectlxp.section.controller.dto.response.SectionUpdateRespo
 import com.example.projectlxp.section.entity.Section;
 import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.section.service.SectionService;
+import com.example.projectlxp.section.service.validator.SectionValidator;
 
 @Service
 public class SectionServiceImpl implements SectionService {
 
     private final SectionRepository sectionRepository;
-    private final CourseRepository courseRespository;
+    private final CourseRepository courseRepository;
     private final LectureRepository lectureRepository;
+    private final SectionValidator sectionValidator;
 
     @Autowired
     public SectionServiceImpl(
             SectionRepository sectionRepository,
-            CourseRepository courseRespository,
-            LectureRepository lectureRepository) {
+            CourseRepository courseRepository,
+            LectureRepository lectureRepository,
+            SectionValidator sectionValidator) {
         this.sectionRepository = sectionRepository;
-        this.courseRespository = courseRespository;
+        this.courseRepository = courseRepository;
         this.lectureRepository = lectureRepository;
+        this.sectionValidator = sectionValidator;
     }
 
     @Override
@@ -39,17 +43,15 @@ public class SectionServiceImpl implements SectionService {
 
         // find Course By id
         Course findCourse =
-                courseRespository
+                courseRepository
                         .findById(courseId)
                         .orElseThrow(
                                 () ->
                                         new CustomBusinessException(
                                                 "Course를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-        // check who created course
-        if (findCourse.getInstructor().getId() != userId) {
-            throw new CustomBusinessException("섹션을 생성할 권한이 없습니다.", HttpStatus.FORBIDDEN);
-        }
+        // check Section Authority
+        sectionValidator.validateSectionAuthority(findCourse.getInstructor().getId(), userId);
 
         // check section by courseId & orderNo
         sectionRepository
@@ -86,10 +88,8 @@ public class SectionServiceImpl implements SectionService {
                         .findById(sectionId)
                         .orElseThrow(() -> new CustomBusinessException("존재하지 않는 섹션입니다."));
 
-        // check who created this section.
-        if (findSection.getCourse().getInstructor().getId() != userId) {
-            throw new CustomBusinessException("섹션을 업데이트 할 권한이 없습니다.", HttpStatus.FORBIDDEN);
-        }
+        // check Section Authority
+        sectionValidator.validateSectionAuthority(findSection, userId);
 
         // update Section
         findSection.updateSection(title, orderNo);
@@ -111,10 +111,8 @@ public class SectionServiceImpl implements SectionService {
                                         new CustomBusinessException(
                                                 "섹션이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
-        // check who created this section
-        if (findSection.getCourse().getInstructor().getId() != userId) {
-            throw new CustomBusinessException("섹션을 삭제할 권한이 없습니다.", HttpStatus.FORBIDDEN);
-        }
+        // check Section Authority
+        sectionValidator.validateSectionAuthority(findSection, userId);
 
         // delete section
         sectionRepository.deleteById(sectionId);
