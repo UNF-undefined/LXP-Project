@@ -40,7 +40,7 @@ public class EnrollmentController {
     @GetMapping("/my")
     public BaseResponse<PagedEnrolledCourseDTO> getMyCourses(
             @RequestParam Long userId,
-            @RequestParam(required = false) Boolean hidden,
+            @RequestParam(defaultValue = "false") Boolean hidden,
             @PageableDefault Pageable pageable) {
         PagedEnrolledCourseDTO pagedEnrolledCourseDTO =
                 enrollmentService.getMyEnrolledCourses(userId, hidden, pageable);
