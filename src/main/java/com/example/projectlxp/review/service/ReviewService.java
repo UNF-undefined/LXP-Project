@@ -1,5 +1,7 @@
 package com.example.projectlxp.review.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
 import com.example.projectlxp.global.dto.PageResponse;
@@ -14,7 +16,7 @@ public interface ReviewService {
      * @param pageable 페이징 및 정렬 정보 (page, size, sort)
      * @return 페이징 처리된 리뷰 DTO 목록 (Page<ReviewResponseDto>)
      */
-    PageResponse<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable);
+    PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(Long courseId, Pageable pageable);
 
     /**
      * 리뷰 작성.
