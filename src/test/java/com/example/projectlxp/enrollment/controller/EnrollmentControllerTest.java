@@ -210,7 +210,7 @@ class EnrollmentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("200"))
                 .andExpect(jsonPath("$.code").value("OK"))
-                .andExpect(jsonPath("$.message").value("수강중인 강좌가 성공적으로 숨김 해제되었습니다 ."))
+                .andExpect(jsonPath("$.message").value("수강중인 강좌가 성공적으로 숨김 해제되었습니다."))
                 .andExpect(jsonPath("$.data.enrollmentId").value(enrollmentId))
                 .andExpect(jsonPath("$.data.hidden").value(false));
     }

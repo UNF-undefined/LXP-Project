@@ -16,7 +16,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query(
             value =
                     "SELECT e FROM Enrollment e JOIN FETCH e.course c WHERE e.user.id = :userId AND e.isHidden = :isHidden",
-            countQuery = "SELECT COUNT(e) FROM Enrollment e WHERE e.user.id = :userId AND e.isHidden = :isHidden")
+            countQuery =
+                    "SELECT COUNT(e) FROM Enrollment e WHERE e.user.id = :userId AND e.isHidden = :isHidden")
     Page<Enrollment> findVisibleByUserIdWithCourse(
             @Param("userId") Long userId, @Param("isHidden") Boolean isHidden, Pageable pageable);
 }

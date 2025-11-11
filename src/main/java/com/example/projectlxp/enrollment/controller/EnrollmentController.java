@@ -58,7 +58,7 @@ public class EnrollmentController {
     public BaseResponse<EnrolledCourseDTO> unhideEnrollment(
             @RequestParam Long userId, @PathVariable Long enrollmentId) {
         return BaseResponse.success(
-                "수강중인 강좌가 성공적으로 숨김 해제되었습니다 .",
+                "수강중인 강좌가 성공적으로 숨김 해제되었습니다.",
                 enrollmentService.unhideEnrollment(userId, enrollmentId));
     }
 }
