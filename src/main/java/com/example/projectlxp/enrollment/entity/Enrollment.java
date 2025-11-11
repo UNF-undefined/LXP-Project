@@ -70,4 +70,12 @@ public class Enrollment extends BaseEntity {
 
     @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LectureProgress> lectureProgresses = new ArrayList<>();
+
+    public void hide() {
+        isHidden = true;
+    }
+
+    public void unhide() {
+        isHidden = false;
+    }
 }

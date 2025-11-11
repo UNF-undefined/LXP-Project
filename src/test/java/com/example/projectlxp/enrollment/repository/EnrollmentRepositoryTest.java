@@ -80,7 +80,7 @@ class EnrollmentRepositoryTest {
         // when
         List<Enrollment> enrollments =
                 enrollmentRepository
-                        .findByUserIdWithCourse(student.getId(), Pageable.unpaged())
+                        .findVisibleByUserIdWithCourse(student.getId(), false, Pageable.unpaged())
                         .getContent();
 
         // then
@@ -98,12 +98,13 @@ class EnrollmentRepositoryTest {
 
         // when
         Page<Enrollment> enrollmentPage =
-                enrollmentRepository.findByUserIdWithCourse(student.getId(), Pageable.unpaged());
+                enrollmentRepository.findVisibleByUserIdWithCourse(
+                        student.getId(), false, Pageable.unpaged());
 
         // then
         assertThat(enrollmentPage).isNotNull();
         assertThat(enrollmentPage.getTotalElements()).isEqualTo(0);
-        assertThat(enrollmentPage.getContent()).isEmpty(); // getContent().hasSize(0)과 동일
+        assertThat(enrollmentPage.getContent()).isEmpty();
         assertThat(enrollmentPage.isEmpty()).isTrue();
     }
 
@@ -130,7 +131,8 @@ class EnrollmentRepositoryTest {
         // when
         Pageable pageable = PageRequest.of(1, 3);
         Page<Enrollment> page =
-                enrollmentRepository.findByUserIdWithCourse(student.getId(), pageable);
+                enrollmentRepository.findVisibleByUserIdWithCourse(
+                        student.getId(), false, pageable);
 
         // then
         assertThat(page.getContent()).hasSize(2);

@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
-                                        .requestMatchers("/api/join")
+                                        .requestMatchers("/**")
                                         .permitAll() // 회원가입 경로는 누구나
                                         .anyRequest()
                                         .authenticated() // 그 외 모든 요청은 인증 필요

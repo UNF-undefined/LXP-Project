@@ -5,7 +5,9 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.service.EnrollmentService;
 import com.example.projectlxp.global.dto.BaseResponse;
@@ -36,9 +39,26 @@ public class EnrollmentController {
 
     @GetMapping("/my")
     public BaseResponse<PagedEnrolledCourseDTO> getMyCourses(
-            @RequestParam Long userId, @PageableDefault Pageable pageable) {
+            @RequestParam Long userId,
+            @RequestParam(required = false) Boolean hidden,
+            @PageableDefault Pageable pageable) {
         PagedEnrolledCourseDTO pagedEnrolledCourseDTO =
-                enrollmentService.getMyEnrolledCourses(userId, pageable);
+                enrollmentService.getMyEnrolledCourses(userId, hidden, pageable);
         return BaseResponse.success("수강중인 강좌 목록 조회를 성공했습니다.", pagedEnrolledCourseDTO);
+    }
+
+    @PutMapping("/{enrollmentId}/hide")
+    public BaseResponse<EnrolledCourseDTO> hideEnrollment(
+            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+        return BaseResponse.success(
+                "수강중인 강좌가 성공적으로 숨겨졌습니다.", enrollmentService.hideEnrollment(userId, enrollmentId));
+    }
+
+    @PutMapping("/{enrollmentId}/unhide")
+    public BaseResponse<EnrolledCourseDTO> unhideEnrollment(
+            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+        return BaseResponse.success(
+                "수강중인 강좌가 성공적으로 숨김 해제되었습니다 .",
+                enrollmentService.unhideEnrollment(userId, enrollmentId));
     }
 }

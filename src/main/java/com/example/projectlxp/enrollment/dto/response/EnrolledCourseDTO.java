@@ -18,6 +18,7 @@ public class EnrolledCourseDTO {
     private String courseTitle;
     private String thumbnail;
     private int progress;
+    private boolean isHidden;
 
     public static EnrolledCourseDTO from(Enrollment enrollment) {
         Course course = enrollment.getCourse();
@@ -26,6 +27,7 @@ public class EnrolledCourseDTO {
                 course.getId(),
                 course.getTitle(),
                 course.getThumbnail(),
-                enrollment.getProgress());
+                enrollment.getProgress(),
+                enrollment.isHidden());
     }
 }
