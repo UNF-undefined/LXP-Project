@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
@@ -32,9 +33,11 @@ public class SectionController {
 
     @PostMapping
     public BaseResponse<SectionCreateResponseDTO> createSection(
-            @RequestBody @Valid SectionCreateRequestDTO request) {
+            @RequestBody @Valid SectionCreateRequestDTO request,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
         SectionCreateResponseDTO createdSection =
-                sectionService.registerSection(request.courseId, request.title, request.orderNo);
+                sectionService.registerSection(
+                        tempUserId, request.courseId, request.title, request.orderNo);
 
         return new BaseResponse<>(HttpStatus.CREATED, "Created Section.", createdSection);
     }
@@ -42,17 +45,20 @@ public class SectionController {
     @PutMapping("/{sectionId}")
     public BaseResponse<SectionUpdateResponseDTO> updateSection(
             @PathVariable(name = "sectionId") Long sectionId,
-            @RequestBody @Valid SectionUpdateRequestDTO request) {
+            @RequestBody @Valid SectionUpdateRequestDTO request,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
 
         SectionUpdateResponseDTO updatedSection =
-                sectionService.modifySection(sectionId, request.title, request.orderNo);
+                sectionService.modifySection(tempUserId, sectionId, request.title, request.orderNo);
 
         return BaseResponse.success(updatedSection);
     }
 
     @DeleteMapping("/{sectionId}")
-    public BaseResponse<Void> deleteSection(@PathVariable(name = "sectionId") Long sectionId) {
-        sectionService.removeSection(sectionId);
+    public BaseResponse<Void> deleteSection(
+            @PathVariable(name = "sectionId") Long sectionId,
+            @RequestParam(name = "userId", defaultValue = "1") Long tempUserId) {
+        sectionService.removeSection(tempUserId, sectionId);
         return BaseResponse.success("Deleted Section", null);
     }
 }
