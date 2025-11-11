@@ -20,6 +20,8 @@ import com.example.projectlxp.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor // "final이 붙은 필드의 생성자를 자동으로 만들어 줌(생성자 주입)"
 @Transactional(readOnly = true) // 조회 전용으로 읽기에 성능 최적화
@@ -33,7 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final EnrollmentRepository enrollmentRepository;
 
     @Override
-    public PageResponse<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable) {
+    public PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(Long courseId, Pageable pageable) {
         Course course =
                 courseRepository
                         .findById(courseId)
@@ -43,12 +45,20 @@ public class ReviewServiceImpl implements ReviewService {
                                                 "해당 강좌를 찾을 수 없습니다. id=" + courseId));
 
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
-
-        Page<ReviewResponseDTO> dtoPage = reviewPage.map(ReviewResponseDTO::new);
-
+        Page<ReviewResponseDTO> dtoPage = reviewPage.map(review -> {
+            String username = (review.getUser() == null || review.getUser().isDeleted())
+                    ? "알 수 없음"
+                    : review.getUser().getName();
+            return ReviewResponseDTO.builder()
+                    .reviewId(review.getId())
+                    .content(review.getContent())
+                    .rating(review.getRating())
+                    .username(username)
+                    .createdAt(review.getCreatedAt())
+                    .build();
+        });
         PageDTO pageInfo = PageDTO.of(dtoPage);
-
-        return PageResponse.success((ReviewResponseDTO) dtoPage.getContent(), pageInfo);
+        return PageResponse.success(dtoPage.getContent(), pageInfo);
     }
 
     /** '리뷰 작성' 메서드 */
@@ -92,7 +102,13 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review savedReview = reviewRepository.save(newReview);
 
-        return new ReviewResponseDTO(savedReview);
+        return ReviewResponseDTO.builder()
+                .reviewId(savedReview.getId())
+                .content(savedReview.getContent())
+                .rating(savedReview.getRating())
+                .username(savedReview.getUser().getName())
+                .createdAt(savedReview.getCreatedAt())
+                .build();
     }
 
     @Transactional
@@ -152,6 +168,12 @@ public class ReviewServiceImpl implements ReviewService {
 
         review.updateReview(requestDTO.getContent(), requestDTO.getRating());
 
-        return new ReviewResponseDTO(review);
+        return ReviewResponseDTO.builder()
+                .reviewId(review.getId())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .username(review.getUser().getName())
+                .createdAt(review.getCreatedAt())
+                .build();
     }
 }

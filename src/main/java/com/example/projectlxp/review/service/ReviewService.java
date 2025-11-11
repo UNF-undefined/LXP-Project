@@ -6,6 +6,8 @@ import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 
+import java.util.List;
+
 public interface ReviewService {
     /**
      * 특정 강좌의 리뷰 목록을 페이징하여 조회.
@@ -14,7 +16,7 @@ public interface ReviewService {
      * @param pageable 페이징 및 정렬 정보 (page, size, sort)
      * @return 페이징 처리된 리뷰 DTO 목록 (Page<ReviewResponseDto>)
      */
-    PageResponse<ReviewResponseDTO> getReviewsByCourse(Long courseId, Pageable pageable);
+    PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(Long courseId, Pageable pageable);
 
     /**
      * 리뷰 작성.

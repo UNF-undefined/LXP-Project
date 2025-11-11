@@ -21,6 +21,8 @@ import com.example.projectlxp.review.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
@@ -29,7 +31,7 @@ public class ReviewController {
 
     // 강좌 별 리뷰 조회
     @GetMapping("/courses/{courseId}")
-    public PageResponse<ReviewResponseDTO> getReviewsByCourse(
+    public PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(
             @PathVariable Long courseId, Pageable pageable) {
 
         return reviewService.getReviewsByCourse(courseId, pageable);
