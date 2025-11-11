@@ -2,6 +2,7 @@ package com.example.projectlxp.course.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +46,11 @@ public class CourseController {
             @RequestBody CourseUpdateRequest request,
             @RequestParam Long userId) {
         return BaseResponse.success(courseService.updateCourse(courseId, request, userId));
+    }
+
+    @DeleteMapping("/{courseId}")
+    public BaseResponse<Boolean> deleteCourse(
+            @PathVariable Long courseId, @RequestParam Long userId) {
+        return BaseResponse.success("강좌 삭제 성공", courseService.deleteCourse(courseId, userId));
     }
 }

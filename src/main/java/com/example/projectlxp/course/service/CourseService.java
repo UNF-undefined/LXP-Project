@@ -12,4 +12,6 @@ public interface CourseService {
     CourseResponse searchCourse(Long courseId);
 
     CourseDTO updateCourse(Long courseId, CourseUpdateRequest request, Long userId);
+
+    Boolean deleteCourse(Long courseId, Long userId);
 }

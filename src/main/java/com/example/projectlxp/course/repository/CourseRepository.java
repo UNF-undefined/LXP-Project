@@ -31,4 +31,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
         WHERE c.id = :courseId
     """)
     Optional<Course> findByIdWithInstructorAndCategory(Long courseId);
+
+    Optional<Course> findByIdAndInstructorId(Long courseId, Long instructorId);
 }

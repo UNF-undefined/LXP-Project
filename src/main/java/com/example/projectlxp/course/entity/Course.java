@@ -64,8 +64,7 @@ public class Course extends BaseEntity {
     @Column(nullable = false)
     private CourseLevel level;
 
-    @Column(name = "is_deleted", nullable = false)
-    @ColumnDefault("false")
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -84,28 +83,6 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course")
     private List<Review> reviews = new ArrayList<>();
-
-    @Builder
-    public Course(
-            String title,
-            String summary,
-            String description,
-            int price,
-            String thumbnail,
-            CourseLevel level,
-            boolean isDeleted,
-            User instructor,
-            Category category) {
-        this.title = title;
-        this.summary = summary;
-        this.description = description;
-        this.price = price;
-        this.thumbnail = thumbnail;
-        this.level = level;
-        this.isDeleted = isDeleted;
-        this.instructor = instructor;
-        this.category = category;
-    }
 
     public void updateDetails(
             String title,
