@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
 @Table(
@@ -70,4 +70,16 @@ public class Enrollment extends BaseEntity {
 
     @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LectureProgress> lectureProgresses = new ArrayList<>();
+
+    public void hide() {
+        isHidden = true;
+    }
+
+    public void unhide() {
+        isHidden = false;
+    }
+
+    public static Enrollment create(User user, Course course, boolean isHidden) {
+        return Enrollment.builder().user(user).course(course).isHidden(isHidden).build();
+    }
 }

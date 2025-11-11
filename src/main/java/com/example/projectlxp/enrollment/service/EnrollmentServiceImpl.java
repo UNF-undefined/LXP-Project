@@ -14,6 +14,7 @@ import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
+import com.example.projectlxp.enrollment.service.validator.EnrollmentValidator;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
@@ -25,14 +26,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final EnrollmentValidator enrollmentValidator;
 
     public EnrollmentServiceImpl(
             EnrollmentRepository enrollmentRepository,
             UserRepository userRepository,
-            CourseRepository courseRepository) {
+            CourseRepository courseRepository,
+            EnrollmentValidator enrollmentValidator) {
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
+        this.enrollmentValidator = enrollmentValidator;
     }
 
     @Override
@@ -63,14 +67,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     HttpStatus.CONFLICT);
         }
 
-        Enrollment enrollment = Enrollment.builder().user(user).course(course).build();
+        Enrollment enrollment = Enrollment.create(user, course, false);
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         return CreateEnrollmentResponseDTO.from(savedEnrollment);
     }
 
     @Override
-    public PagedEnrolledCourseDTO getMyEnrolledCourses(Long userId, Pageable pageable) {
+    public PagedEnrolledCourseDTO getMyEnrolledCourses(
+            Long userId, Boolean isHidden, Pageable pageable) {
         User user =
                 userRepository
                         .findById(userId)
@@ -78,8 +83,46 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                                 () -> new CustomBusinessException("존재하지 않는 회원입니다. ID: " + userId));
 
         Page<Enrollment> enrollmentPage =
-                enrollmentRepository.findByUserIdWithCourse(user.getId(), pageable);
+                enrollmentRepository.findVisibleByUserIdWithCourse(
+                        user.getId(), isHidden, pageable);
+
         Page<EnrolledCourseDTO> enrolledCourseDTOPage = enrollmentPage.map(EnrolledCourseDTO::from);
         return PagedEnrolledCourseDTO.from(enrolledCourseDTOPage);
+    }
+
+    @Override
+    @Transactional
+    public EnrolledCourseDTO hideEnrollment(Long userId, Long enrollmentId) {
+        Enrollment enrollment =
+                enrollmentRepository
+                        .findById(enrollmentId)
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "존재하지 않는 수강신청입니다. ID: " + enrollmentId,
+                                                HttpStatus.NOT_FOUND));
+
+        enrollmentValidator.validateOwnership(userId, enrollment);
+        enrollment.hide();
+
+        return EnrolledCourseDTO.from(enrollment);
+    }
+
+    @Override
+    @Transactional
+    public EnrolledCourseDTO unhideEnrollment(Long userId, Long enrollmentId) {
+        Enrollment enrollment =
+                enrollmentRepository
+                        .findById(enrollmentId)
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "존재하지 않는 수강신청입니다. ID: " + enrollmentId,
+                                                HttpStatus.NOT_FOUND));
+
+        enrollmentValidator.validateOwnership(userId, enrollment);
+        enrollment.unhide();
+
+        return EnrolledCourseDTO.from(enrollment);
     }
 }
