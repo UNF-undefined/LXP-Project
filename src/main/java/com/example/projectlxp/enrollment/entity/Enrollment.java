@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
 @Table(
@@ -77,5 +77,13 @@ public class Enrollment extends BaseEntity {
 
     public void unhide() {
         isHidden = false;
+    }
+
+    public static Enrollment create(User user, Course course, boolean isHidden) {
+        return Enrollment.builder()
+                .user(user)
+                .course(course)
+                .isHidden(isHidden)
+                .build();
     }
 }

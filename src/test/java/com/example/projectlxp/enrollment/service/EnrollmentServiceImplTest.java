@@ -288,7 +288,7 @@ class EnrollmentServiceImplTest {
     }
 
     private Enrollment createEnrollment(User user, Course course, boolean isHidden) {
-        return Enrollment.builder().user(user).course(course).isHidden(isHidden).build();
+        return Enrollment.create(user, course, isHidden);
     }
 
     private Enrollment createEnrollment(User user, Course course) {

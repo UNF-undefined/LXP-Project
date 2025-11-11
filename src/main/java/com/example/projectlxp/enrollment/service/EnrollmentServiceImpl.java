@@ -67,7 +67,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     HttpStatus.CONFLICT);
         }
 
-        Enrollment enrollment = Enrollment.builder().user(user).course(course).build();
+        Enrollment enrollment = Enrollment.create(user, course, false);
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         return CreateEnrollmentResponseDTO.from(savedEnrollment);

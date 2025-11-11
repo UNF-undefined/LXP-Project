@@ -173,6 +173,6 @@ class EnrollmentRepositoryTest {
     }
 
     private Enrollment createEnrollment(User user, Course course) {
-        return Enrollment.builder().user(user).course(course).build();
+        return Enrollment.create(user, course, false);
     }
 }
