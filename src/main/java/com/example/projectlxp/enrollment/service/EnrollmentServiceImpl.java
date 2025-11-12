@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.example.projectlxp.enrollment.dto.response.EnrolledSectionDTO;
-import com.example.projectlxp.section.entity.Section;
-import com.example.projectlxp.section.repository.SectionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,6 +18,7 @@ import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDT
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledLectureDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledSectionDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.enrollment.entity.LectureProgress;
@@ -30,6 +28,8 @@ import com.example.projectlxp.enrollment.service.validator.EnrollmentValidator;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
+import com.example.projectlxp.section.entity.Section;
+import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
@@ -118,22 +118,27 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         Map<Long, Boolean> progressMap = createLectureProgressMap(enrollment);
         double completionRate = calculateCompletionRate(enrolledCourseLectures.size(), progressMap);
-        Map<Long, List<EnrolledLectureDTO>> lectureDTOsBySectionId = enrolledCourseLectures.stream()
-                .collect(Collectors.groupingBy(
-                        lecture -> lecture.getSection().getId(),
-                        Collectors.mapping(
-                                lecture -> EnrolledLectureDTO.of(lecture, progressMap),
-                                Collectors.toList())
-                ));
+        Map<Long, List<EnrolledLectureDTO>> lectureDTOsBySectionId =
+                enrolledCourseLectures.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        lecture -> lecture.getSection().getId(),
+                                        Collectors.mapping(
+                                                lecture ->
+                                                        EnrolledLectureDTO.of(lecture, progressMap),
+                                                Collectors.toList())));
         List<Section> sections = sectionRepository.findAllByCourseOrderByOrderNoAsc(enrolledCourse);
-        List<EnrolledSectionDTO> sectionDTOs = sections.stream()
-                .map(section -> {
-                    List<EnrolledLectureDTO> lecturesForThisSection =
-                            lectureDTOsBySectionId.getOrDefault(section.getId(), Collections.emptyList());
+        List<EnrolledSectionDTO> sectionDTOs =
+                sections.stream()
+                        .map(
+                                section -> {
+                                    List<EnrolledLectureDTO> lecturesForThisSection =
+                                            lectureDTOsBySectionId.getOrDefault(
+                                                    section.getId(), Collections.emptyList());
 
-                    return EnrolledSectionDTO.of(section, lecturesForThisSection);
-                })
-                .toList();
+                                    return EnrolledSectionDTO.of(section, lecturesForThisSection);
+                                })
+                        .toList();
         return EnrolledCourseDetailDTO.of(enrollment, enrolledCourse, completionRate, sectionDTOs);
     }
 
@@ -157,7 +162,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
      * 전체 진도율(%)을 계산하는 메서드
      *
      * @param totalLectures 강좌의 전체 강의 수
-     * @param progressMap   Key: Lecture ID, Value: 완료 여부(boolean)
+     * @param progressMap Key: Lecture ID, Value: 완료 여부(boolean)
      * @return 진도율 (0.0 ~ 100.0)
      */
     private double calculateCompletionRate(long totalLectures, Map<Long, Boolean> progressMap) {
