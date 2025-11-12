@@ -6,11 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import com.example.projectlxp.category.entity.QCategory;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.entity.CourseSortBy;
 import com.example.projectlxp.course.entity.QCourse;
 import com.example.projectlxp.enrollment.entity.QEnrollment;
 import com.example.projectlxp.review.entity.QReview;
+import com.example.projectlxp.user.entity.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 
@@ -19,21 +21,46 @@ public class CourseQuery extends JPAQuery<Course> {
     private final QCourse course;
     private final QReview review;
     private final QEnrollment enrollment;
+    private final QUser user;
+    private final QCategory category;
+    private final QCategory parentCategory = new QCategory("parentCategory");
 
-    public CourseQuery(EntityManager em, QCourse course, QReview review, QEnrollment enrollment) {
+    public CourseQuery(EntityManager em, QCourse course) {
+        this(em, course, null, null, null, null);
+    }
+
+    public CourseQuery(
+            EntityManager em,
+            QCourse course,
+            QReview review,
+            QEnrollment enrollment,
+            QUser user,
+            QCategory category) {
         super(em);
         this.course = course;
         this.review = review;
         this.enrollment = enrollment;
+        this.user = user;
+        this.category = category;
     }
 
-    public CourseQuery selectFromCourse() {
+    public CourseQuery fromCourse() {
         this.from(course);
         return this;
     }
 
+    public CourseQuery join() {
+        this.join(course.instructor, user)
+                .fetchJoin()
+                .join(course.category, category)
+                .fetchJoin()
+                .leftJoin(category.parent, parentCategory)
+                .fetchJoin();
+        return this;
+    }
+
     public CourseQuery whereCourse(BooleanExpression... conditions) {
-        where(conditions);
+        this.where(conditions);
         return this;
     }
 
@@ -54,14 +81,20 @@ public class CourseQuery extends JPAQuery<Course> {
         return this;
     }
 
-    public Page<Course> fetchPage(Pageable pageable) {
-        Long totalCount = clone().select(course.id.countDistinct()).fetchOne();
-
-        long total = totalCount != null ? totalCount : 0L;
-
+    public Page<Course> fetchPage(Pageable pageable, long total) {
         this.offset(pageable.getOffset());
         this.limit(pageable.getPageSize());
 
         return new PageImpl<>(this.fetch(), pageable, total);
+    }
+
+    public long count(BooleanExpression... whereConditions) {
+        Long totalCount =
+                this.select(course.id.countDistinct())
+                        .from(course)
+                        .where(whereConditions)
+                        .fetchOne();
+
+        return totalCount != null ? totalCount : 0L;
     }
 }

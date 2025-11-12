@@ -1,8 +1,10 @@
 package com.example.projectlxp.course.repository.querydsl;
 
+import static com.example.projectlxp.category.entity.QCategory.category;
 import static com.example.projectlxp.course.entity.QCourse.course;
 import static com.example.projectlxp.enrollment.entity.QEnrollment.enrollment;
 import static com.example.projectlxp.review.entity.QReview.review;
+import static com.example.projectlxp.user.entity.QUser.user;
 import static java.util.Objects.nonNull;
 
 import java.util.List;
@@ -26,12 +28,18 @@ public class CourseQueryRepositoryImpl implements CourseQueryRepository {
 
     @Override
     public Page<Course> searchAll(CourseSearchRequest request, Pageable pageable) {
-        return new CourseQuery(em, course, review, enrollment)
-                .selectFromCourse()
+        long total =
+                new CourseQuery(em, course)
+                        .count(
+                                inInstructors(request.instructorIds()),
+                                inCategories(request.categoryIds()));
+        return new CourseQuery(em, course, review, enrollment, user, category)
+                .fromCourse()
+                .join()
                 .whereCourse(
                         inInstructors(request.instructorIds()), inCategories(request.categoryIds()))
                 .orderByDefault(request.sortBy())
-                .fetchPage(pageable);
+                .fetchPage(pageable, total);
     }
 
     private BooleanExpression inInstructors(List<Long> instructorIds) {
