@@ -1,6 +1,7 @@
 package com.example.projectlxp.lecture.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
+import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.request.LectureCreateRequestDTO;
 import com.example.projectlxp.lecture.controller.dto.request.LectureUpdateRequestDTO;
@@ -57,5 +59,15 @@ public class LectureController {
         LectureUpdateResponseDTO response = lectureService.modifyLecture(modifyInfo);
 
         return BaseResponse.success(response);
+    }
+
+    @DeleteMapping("/{lectureId}")
+    public BaseResponse<?> deleteLecture(
+            @PathVariable(name = "lectureId") Long lectureId,
+            @RequestParam(name = "userId", defaultValue = "1") Long userId) {
+        // convert to DTO
+        LectureDeleteDTO deleteInfo = new LectureDeleteDTO(userId, lectureId);
+        lectureService.removeLecture(deleteInfo);
+        return BaseResponse.success("Deleted Lecture");
     }
 }

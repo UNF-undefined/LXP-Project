@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
@@ -116,6 +117,28 @@ public class LectureServiceImpl implements LectureService {
                 updatedLecture.getSection().getId(),
                 updatedLecture.getTitle(),
                 updatedLecture.getOrderNo());
+    }
+
+    @Override
+    @Transactional
+    public void removeLecture(LectureDeleteDTO deleteInfo) {
+        // set info
+        Long userId = deleteInfo.getUserId();
+        Long lectureId = deleteInfo.getLectureId();
+
+        // find Lecture
+        Lecture findLecture = findLectureAndException(lectureId);
+
+        // validate lecture authority
+        lectureValidator.validateLectureAuthority(
+                findLecture.getSection().getCourse().getInstructor().getId(), userId);
+
+        // soft delete lecture
+        lectureRepository.delete(findLecture);
+
+        // order_no reorder
+        lectureRepository.decrementOrderAfterDelete(
+                findLecture.getSection().getId(), findLecture.getOrderNo());
     }
 
     private Lecture findLectureAndException(Long lectureId) {
