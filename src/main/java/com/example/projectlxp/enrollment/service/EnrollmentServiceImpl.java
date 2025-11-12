@@ -103,7 +103,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                         .findById(userId)
                         .orElseThrow(
                                 () -> new CustomBusinessException("존재하지 않는 회원입니다. ID: " + userId));
-        System.out.println("==============================");
         Enrollment enrollment =
                 enrollmentRepository
                         .findDetailByIdAndUserId(enrollmentId, user.getId())
@@ -115,11 +114,32 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Course enrolledCourse = enrollment.getCourse();
         List<Lecture> enrolledCourseLectures =
                 lectureRepository.findLecturesByCourse(enrolledCourse);
+        List<Section> enrolledCourseSections =
+                sectionRepository.findAllByCourseOrderByOrderNoAsc(enrolledCourse);
 
         Map<Long, Boolean> progressMap = createLectureProgressMap(enrollment);
         double completionRate = calculateCompletionRate(enrolledCourseLectures.size(), progressMap);
+
+        List<EnrolledSectionDTO> sectionDTOs =
+                createEnrolledSectionDTOs(
+                        enrolledCourseSections, enrolledCourseLectures, progressMap);
+        return EnrolledCourseDetailDTO.of(enrollment, enrolledCourse, completionRate, sectionDTOs);
+    }
+
+    /**
+     * 섹션 목록과 전체 강의 목록을 조합하여, 계층 구조를 가진 EnrolledSectionDTO 리스트를 생성합니다.
+     *
+     * @param sections 강좌의 모든 섹션 (순서대로 정렬됨)
+     * @param lectures 강좌의 모든 강의
+     * @param progressMap 강의별 완료 여부 맵
+     * @return List<EnrolledSectionDTO>
+     */
+    private List<EnrolledSectionDTO> createEnrolledSectionDTOs(
+            List<Section> sections, List<Lecture> lectures, Map<Long, Boolean> progressMap) {
+
+        // Lecture DTO를 만들고, Section ID를 기준으로 그룹화
         Map<Long, List<EnrolledLectureDTO>> lectureDTOsBySectionId =
-                enrolledCourseLectures.stream()
+                lectures.stream()
                         .collect(
                                 Collectors.groupingBy(
                                         lecture -> lecture.getSection().getId(),
@@ -127,19 +147,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                                                 lecture ->
                                                         EnrolledLectureDTO.of(lecture, progressMap),
                                                 Collectors.toList())));
-        List<Section> sections = sectionRepository.findAllByCourseOrderByOrderNoAsc(enrolledCourse);
-        List<EnrolledSectionDTO> sectionDTOs =
-                sections.stream()
-                        .map(
-                                section -> {
-                                    List<EnrolledLectureDTO> lecturesForThisSection =
-                                            lectureDTOsBySectionId.getOrDefault(
-                                                    section.getId(), Collections.emptyList());
 
-                                    return EnrolledSectionDTO.of(section, lecturesForThisSection);
-                                })
-                        .toList();
-        return EnrolledCourseDetailDTO.of(enrollment, enrolledCourse, completionRate, sectionDTOs);
+        // 정렬된 섹션 목록을 순회하며 DTO 조립
+        return sections.stream()
+                .map(
+                        section -> {
+                            // 1번 맵에서 현재 섹션에 해당하는 강의 DTO 리스트를 가져옴
+                            List<EnrolledLectureDTO> lecturesForThisSection =
+                                    lectureDTOsBySectionId.getOrDefault(
+                                            section.getId(), Collections.emptyList());
+
+                            return EnrolledSectionDTO.of(section, lecturesForThisSection);
+                        })
+                .toList();
     }
 
     /**
