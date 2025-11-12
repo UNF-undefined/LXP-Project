@@ -276,7 +276,7 @@ class ReviewServiceImplTest {
 
     // [ 기능 4: 리뷰 삭제 (예외 - 권한) ]
     @Test
-    @DisplayName("리뷰 삭제: '남의' 리뷰를 삭제 시도 시, '권한 없음' 예외가 발생한다")
+    @DisplayName("리뷰 삭제: '남의' 리뷰를 삭제 시도 시, '권한 없음' 예외가 발생한다!")
     void testDeleteReview_FailsOnPermissionDenied() {
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(mockReview));
         when(userRepository.findById(attackerId)).thenReturn(Optional.of(mockAttacker));
