@@ -12,16 +12,13 @@ import org.springframework.stereotype.Component;
  * 비속어를 필터링하는 유틸리티 컴포넌트입니다. Service 계층에 주입되어 사용됩니다. (VaneProject의 아이디어를 참고하여, '정규식'과 'Set'을 사용하는
  * 방식으로 구현)
  */
-@Component // Spring이 이 클래스를 'Bean'으로 인식하고 관리하도록 설정
+@Component
 public class ProfanityFilter {
-
-    // 비속어 목록을 'Set'으로 관리하여 검색 속도를 O(1)로 최적화합니다.
+    .
     private final Set<String> badWords = new HashSet<>();
 
-    // 비속어를 '*'로 마스킹하는 패턴을 미리 컴파일합니다.
     private final Pattern pattern;
 
-    // 비속어 목록 (팀원들과 상의하여 실제 목록으로 채워야 합니다)
     private static final List<String> DEFAULT_BAD_WORDS =
             List.of(
                     "ㅅㅂ",
@@ -639,10 +636,6 @@ public class ProfanityFilter {
         // 기본 비속어 목록을 Set에 추가
         addBadWords(DEFAULT_BAD_WORDS);
 
-        // Set에 저장된 단어 목록을 바탕으로 정규식 패턴 생성
-        // (예: \b(바보|멍청이|나쁜말)\b)
-        // \b는 '단어 경계'를 의미하여, "바보같은"은 필터링되지만 "나는바보"는 필터링되지 않도록 함.
-        // (VaneProject 참고)
         this.pattern =
                 Pattern.compile(
                         "\\b(" + String.join("|", this.badWords) + ")\\b",
@@ -672,21 +665,16 @@ public class ProfanityFilter {
             return rawContent;
         }
 
-        // Matcher를 생성하여 컴파일된 패턴과 원본 텍스트를 비교합니다.
         Matcher matcher = this.pattern.matcher(rawContent);
 
-        // StringBuilder를 사용하여 '치환'된 '문자열'을 '효율'적으로 '구성'합니다.
-        // (String을 '+'로 '반복' '연산'하는 '것'보다 '성능'이 '좋습니다'.)
+
         StringBuilder sb = new StringBuilder();
 
         while (matcher.find()) {
-            // '찾아낸' '비속어'('group(1)')의 '길이' '만큼' '*'로 '마스킹'합니다.
             String replacement = "*".repeat(matcher.group(1).length());
 
-            // '찾아낸' '비속어' '앞'까지의 '내용'과 '마스킹'된 '문자열'을 'StringBuilder'에 '추가'합니다.
             matcher.appendReplacement(sb, replacement);
         }
-        // '마지막' '비속어' '이후'의 '나머지' '문자열'을 '전부' '추가'합니다.
         matcher.appendTail(sb);
 
         return sb.toString();
