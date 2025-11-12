@@ -1,5 +1,6 @@
 package com.example.projectlxp.course.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,7 +14,7 @@ public record CourseSaveRequest(
         @NotBlank String summary,
         @NotBlank String description,
         @NotNull CourseLevel level,
-        @NotNull Integer price,
+        @NotNull @Min(value = 0) Integer price,
         String thumbnailUrl,
         @NotNull Long categoryId) {
 

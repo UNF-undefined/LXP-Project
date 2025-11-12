@@ -1,10 +1,14 @@
 package com.example.projectlxp.course.service.validator;
 
+import static java.util.Objects.nonNull;
+
 import org.springframework.stereotype.Component;
 
 import com.example.projectlxp.category.error.CategoryNotFoundException;
 import com.example.projectlxp.category.repository.CategoryRepository;
+import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.error.CourseCreationDeniedException;
+import com.example.projectlxp.course.error.CourseUpdateDeniedException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.user.entity.Role;
@@ -37,6 +41,16 @@ public class CourseValidator {
         }
 
         if (!categoryRepository.existsById(categoryId)) {
+            throw new CategoryNotFoundException();
+        }
+    }
+
+    public void validateCourseUpdate(Course course, Long userId, Long categoryId) {
+        if (nonNull(userId) && !course.getInstructor().getId().equals(userId)) {
+            throw new CourseUpdateDeniedException();
+        }
+
+        if (nonNull(categoryId) && !categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFoundException();
         }
     }

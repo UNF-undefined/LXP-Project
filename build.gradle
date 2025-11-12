@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.diffplug.spotless' version '8.0.0'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -25,6 +26,24 @@ repositories {
     mavenCentral()
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+// 리포트 생성
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
 dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -32,6 +51,7 @@ dependencies {
 
     // Database
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     // Lombok
@@ -44,8 +64,12 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
+     implementation 'org.springframework.boot:spring-boot-starter-security'
+     testImplementation 'org.springframework.security:spring-security-test'
+
+    // Apache Tika
+    implementation 'org.apache.tika:tika-core:2.9.2'
+    implementation 'org.apache.tika:tika-parsers-standard-package:2.9.2'
 
     // JMT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -55,10 +79,6 @@ dependencies {
 
 tasks.named('compileJava') {
     dependsOn 'spotlessApply'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }
 
 spotless {

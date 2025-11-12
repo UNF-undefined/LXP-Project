@@ -1,5 +1,8 @@
 package com.example.projectlxp.course.entity;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +17,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
@@ -49,6 +53,7 @@ public class Course extends BaseEntity {
 
     @Lob @Column private String description;
 
+    @Min(value = 0)
     @Column(nullable = false)
     @ColumnDefault("0")
     private int price = 0;
@@ -59,8 +64,7 @@ public class Course extends BaseEntity {
     @Column(nullable = false)
     private CourseLevel level;
 
-    @Column(name = "is_deleted", nullable = false)
-    @ColumnDefault("false")
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -80,42 +84,26 @@ public class Course extends BaseEntity {
     @OneToMany(mappedBy = "course")
     private List<Review> reviews = new ArrayList<>();
 
-    @Builder
-    public Course(
+    public void updateDetails(
             String title,
             String summary,
             String description,
-            int price,
+            Integer price,
             String thumbnail,
             CourseLevel level,
-            boolean isDeleted,
-            User instructor,
-            Category category) {
-        this.title = title;
-        this.summary = summary;
-        this.description = description;
-        this.price = price;
-        this.thumbnail = thumbnail;
-        this.level = level;
-        this.isDeleted = isDeleted;
-        this.instructor = instructor;
-        this.category = category;
-    }
+            Category newCategory) {
 
-    public void updateCourse(
-            String title,
-            String summary,
-            String description,
-            int price,
-            String thumbnail,
-            CourseLevel level,
-            Category category) {
-        this.title = title;
-        this.summary = summary;
-        this.description = description;
-        this.price = price;
-        this.thumbnail = thumbnail;
-        this.level = level;
-        this.category = category;
+        this.title = (isNull(title)) ? this.title : title;
+        this.summary = (isNull(summary)) ? this.summary : summary;
+        this.description = (isNull(description)) ? this.description : description;
+        if (nonNull(price)) {
+            if (price < 0) {
+                throw new IllegalArgumentException("가격은 음수일 수 없습니다.");
+            }
+            this.price = price;
+        }
+        this.thumbnail = (isNull(thumbnail)) ? this.thumbnail : thumbnail;
+        this.level = (isNull(level)) ? this.level : level;
+        this.category = (isNull(newCategory)) ? this.category : newCategory;
     }
 }
