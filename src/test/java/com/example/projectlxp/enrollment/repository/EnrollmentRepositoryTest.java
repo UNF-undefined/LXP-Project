@@ -5,15 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 
+import com.example.projectlxp.IntegrationTestSupport;
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.category.repository.CategoryRepository;
 import com.example.projectlxp.course.entity.Course;
@@ -24,13 +24,19 @@ import com.example.projectlxp.user.entity.Role;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
-@ActiveProfiles("test")
-@DataJpaTest
-class EnrollmentRepositoryTest {
+class EnrollmentRepositoryTest extends IntegrationTestSupport {
     @Autowired private EnrollmentRepository enrollmentRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private CourseRepository courseRepository;
     @Autowired private CategoryRepository categoryRepository;
+
+    @AfterEach
+    void tearDown() {
+        enrollmentRepository.deleteAllInBatch();
+        courseRepository.deleteAllInBatch();
+        categoryRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+    }
 
     @DisplayName("학생과 강좌로 이미 등록된 내역이 있으면 true를 반환한다.")
     @Test
