@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -53,12 +54,14 @@ public class CourseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     public BaseResponse<CourseResponse> registerCourse(
             @RequestBody @Valid CourseSaveRequest request, @CurrentUserId Long userId) {
         return BaseResponse.success(courseService.saveCourse(request, userId));
     }
 
     @PutMapping("/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     public BaseResponse<CourseDTO> updateCourse(
             @PathVariable Long courseId,
             @RequestBody CourseUpdateRequest request,
@@ -67,6 +70,7 @@ public class CourseController {
     }
 
     @DeleteMapping("/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     public BaseResponse<Boolean> deleteCourse(
             @PathVariable Long courseId, @CurrentUserId Long userId) {
         return BaseResponse.success("강좌 삭제 성공", courseService.deleteCourse(courseId, userId));
