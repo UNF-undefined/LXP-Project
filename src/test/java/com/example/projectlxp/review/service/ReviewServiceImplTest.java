@@ -167,31 +167,23 @@ class ReviewServiceImplTest {
     @DisplayName("리뷰 작성: '비속어'가 '포함'된 '경우', '마스킹'되어 '저장'/'반환'된다")
     void createReview_WithProfanity_ShouldBeMasked() {
         // --- [ Given ] ---
-        // (1. '사전 검증' '통과' '대본')
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
         when(enrollmentRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(true);
         when(reviewRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(false);
 
-        // (2. '필터링' '전' '주문서')
         ReviewRequestDTO dirtyRequest = new ReviewRequestDTO("이런 바보 같은 강의", 1);
 
-        // (3. ★'진짜' '필터링' '대본'★)
-        // "'setUp'의 '기본' '대본'('그대로 통과')을 '이' '테스트'에 '한해' '덮어'씁니다."
-        // "'이런 바보 같은 강의'"가 '들어오면', "'이런 ** 같은 강의'"로 '바꿔서' '반환'해!"
         when(mockProfanityFilter.filter("이런 바보 같은 강의")).thenReturn("이런 ** 같은 강의");
 
-        // (4. '저장' '대본' - '저장'될 '엔티티'를 '그대로' '반환')
         when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArgument(0));
 
-        // (5. 'DTO' '반환' '대본' - N+1 '수정' '사항' '반영')
         when(mockUser.getName()).thenReturn("테스트유저");
 
         // --- [ When ] ---
         ReviewResponseDTO response = reviewService.createReview(courseId, dirtyRequest, userId);
 
         // --- [ Then ] ---
-        // '응답'('ResponseDTO')은 '필터링'된 '내용'을 '포함'해야 합니다.
         assertThat(response.getContent()).isEqualTo("이런 ** 같은 강의");
         assertThat(response.getUsername()).isEqualTo("테스트유저");
     }
