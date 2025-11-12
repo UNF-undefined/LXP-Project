@@ -188,6 +188,31 @@ class ReviewServiceImplTest {
         assertThat(response.getUsername()).isEqualTo("테스트유저");
     }
 
+    @Test
+    @DisplayName("리뷰 작성: '숫자/특수문자' 우회 비속어 포함 시, 마스킹되어 저장된다")
+    void createReview_WithObfuscatedProfanity_ShouldBeMasked() {
+        // --- [ Given ] ---
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        when(enrollmentRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(true);
+        when(reviewRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(false);
+
+        ReviewRequestDTO dirtyRequest = new ReviewRequestDTO("이런 시1발@ 같은 강의", 1);
+
+        when(mockProfanityFilter.filter("이런 시1발@ 같은 강의")).thenReturn("이런 ** 같은 강의");
+        when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArgument(0));
+        when(mockUser.getName()).thenReturn("테스트유저");
+
+        // --- [ When ] ---
+        ReviewResponseDTO response = reviewService.createReview(courseId, dirtyRequest, userId);
+
+        // --- [ Then ] ---
+        assertThat(response.getContent()).isEqualTo("이런 ** 같은 강의");
+        assertThat(response.getUsername()).isEqualTo("테스트유저");
+
+        verify(mockProfanityFilter, times(1)).filter("이런 시1발@ 같은 강의");
+    }
+
     // [ 기능 3: 리뷰 수정 (정상) ]
     @Test
     @DisplayName("리뷰 수정: '성공' 케이스")

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 public class ProfanityFilter {
 
     private final Set<String> badWords = new HashSet<>();
-
     private final Pattern pattern;
 
     private static final List<String> DEFAULT_BAD_WORDS =
@@ -82,11 +82,7 @@ public class ProfanityFilter {
     public ProfanityFilter() {
         addBadWords(DEFAULT_BAD_WORDS);
 
-        this.pattern =
-                Pattern.compile(
-                        "\\b(" + String.join("|", this.badWords) + ")\\b",
-                        Pattern.CASE_INSENSITIVE // 영문 대소문자 구분 없이
-                        );
+        this.pattern = Pattern.compile(String.join("|", this.badWords), Pattern.CASE_INSENSITIVE);
     }
 
     /**
@@ -95,7 +91,7 @@ public class ProfanityFilter {
      * @param words 추가할 비속어 리스트
      */
     public void addBadWords(List<String> words) {
-        this.badWords.addAll(words);
+        this.badWords.addAll(words.stream().map(this::normalize).collect(Collectors.toSet()));
     }
 
     /**
@@ -109,15 +105,27 @@ public class ProfanityFilter {
             return rawContent;
         }
 
-        Matcher matcher = this.pattern.matcher(rawContent);
-        StringBuilder sb = new StringBuilder();
+        String normalizedContent = normalize(rawContent);
 
-        while (matcher.find()) {
-            String replacement = "*".repeat(matcher.group(1).length());
-            matcher.appendReplacement(sb, replacement);
+        Matcher newMatcher = this.pattern.matcher(normalizedContent);
+
+        while (newMatcher.find()) {
+            String badWord = newMatcher.group();
+            String replacement = "*".repeat(badWord.length());
+            normalizedContent = normalizedContent.replaceAll(Pattern.quote(badWord), replacement);
         }
-        matcher.appendTail(sb);
 
-        return sb.toString();
+        return normalizedContent;
+    }
+
+    /**
+     * '우회' '문자'를 '제거'하거나 '치환'하는 '정규화' '메서드'
+     *
+     * @param text '사용자'의 '날것' '입력' (예: "시1발")
+     * @return '필터링' '가능'하도록 '깨끗'해진 '문자열' (예: "시발")
+     */
+    private String normalize(String text) {
+        String normalized = text.replaceAll("[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z\\s]", "");
+        return normalized;
     }
 }
