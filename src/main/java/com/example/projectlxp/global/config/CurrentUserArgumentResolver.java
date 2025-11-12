@@ -9,6 +9,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.example.projectlxp.global.annotation.CurrentUserId;
+
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 

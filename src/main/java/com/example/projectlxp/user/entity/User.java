@@ -81,4 +81,22 @@ public class User extends BaseEntity {
             String name, String email, String hashedPassword, Role role, String profileImage) {
         return new User(name, role, email, hashedPassword, profileImage);
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateInfo(String name, String profileImage) {
+
+        if (name != null) {
+            this.name = name;
+        }
+        if (profileImage != null) {
+            this.profileImage = profileImage;
+        }
+    }
+
+    public void updatePassword(String hashedPassword) {
+        this.hashedPassword = hashedPassword;
+    }
 }
