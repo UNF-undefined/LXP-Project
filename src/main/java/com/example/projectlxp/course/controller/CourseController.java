@@ -24,7 +24,7 @@ import com.example.projectlxp.course.dto.request.CourseSearchRequest;
 import com.example.projectlxp.course.dto.request.CourseUpdateRequest;
 import com.example.projectlxp.course.dto.response.CourseResponse;
 import com.example.projectlxp.course.service.CourseService;
-import com.example.projectlxp.global.config.CurrentUserId;
+import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.global.dto.PageDTO;
 import com.example.projectlxp.global.dto.PageResponse;
