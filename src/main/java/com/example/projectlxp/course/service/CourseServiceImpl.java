@@ -2,6 +2,8 @@ package com.example.projectlxp.course.service;
 
 import static java.util.Objects.nonNull;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,9 +11,10 @@ import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.category.error.CategoryNotFoundException;
 import com.example.projectlxp.category.repository.CategoryRepository;
 import com.example.projectlxp.course.dto.CourseDTO;
-import com.example.projectlxp.course.dto.CourseResponse;
-import com.example.projectlxp.course.dto.CourseSaveRequest;
-import com.example.projectlxp.course.dto.CourseUpdateRequest;
+import com.example.projectlxp.course.dto.request.CourseSaveRequest;
+import com.example.projectlxp.course.dto.request.CourseSearchRequest;
+import com.example.projectlxp.course.dto.request.CourseUpdateRequest;
+import com.example.projectlxp.course.dto.response.CourseResponse;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.error.CourseNotFoundException;
 import com.example.projectlxp.course.error.CourseNotSavedException;
@@ -84,6 +87,12 @@ public class CourseServiceImpl implements CourseService {
                 request.level(),
                 category);
         return CourseDTO.from(course);
+    }
+
+    @Override
+    public Page<CourseDTO> searchCourses(
+            CourseSearchRequest request, Pageable pageable, Long userId) {
+        return courseRepository.searchAll(request, pageable).map(CourseDTO::from);
     }
 
     @Override

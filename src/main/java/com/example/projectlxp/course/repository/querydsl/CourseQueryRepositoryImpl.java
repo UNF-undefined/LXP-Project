@@ -1,0 +1,48 @@
+package com.example.projectlxp.course.repository.querydsl;
+
+import static com.example.projectlxp.course.entity.QCourse.course;
+import static com.example.projectlxp.enrollment.entity.QEnrollment.enrollment;
+import static com.example.projectlxp.review.entity.QReview.review;
+import static java.util.Objects.nonNull;
+
+import java.util.List;
+
+import jakarta.persistence.EntityManager;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.example.projectlxp.course.dto.request.CourseSearchRequest;
+import com.example.projectlxp.course.entity.Course;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
+public class CourseQueryRepositoryImpl implements CourseQueryRepository {
+
+    private final EntityManager em;
+
+    public CourseQueryRepositoryImpl(EntityManager em) {
+        this.em = em;
+    }
+
+    @Override
+    public Page<Course> searchAll(CourseSearchRequest request, Pageable pageable) {
+        return new CourseQuery(em, course, review, enrollment)
+                .selectFromCourse()
+                .whereCourse(
+                        inInstructors(request.instructorIds()), inCategories(request.categoryIds()))
+                .orderByDefault(request.sortBy())
+                .fetchPage(pageable);
+    }
+
+    private BooleanExpression inInstructors(List<Long> instructorIds) {
+        return nonNull(instructorIds) && !instructorIds.isEmpty()
+                ? course.instructor.id.in(instructorIds)
+                : null;
+    }
+
+    private BooleanExpression inCategories(List<Long> categoryIds) {
+        return nonNull(categoryIds) && !categoryIds.isEmpty()
+                ? course.category.id.in(categoryIds)
+                : null;
+    }
+}

@@ -19,7 +19,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -54,8 +53,8 @@ public class Course extends BaseEntity {
     @Lob @Column private String description;
 
     @Min(value = 0)
-    @Column(nullable = false)
-    @ColumnDefault("0")
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
     private int price = 0;
 
     @Builder.Default @Column private String thumbnail = "default_thumbnail_url.png";
@@ -64,6 +63,7 @@ public class Course extends BaseEntity {
     @Column(nullable = false)
     private CourseLevel level;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isDeleted = false;
 

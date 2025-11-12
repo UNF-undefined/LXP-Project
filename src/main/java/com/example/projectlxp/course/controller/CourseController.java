@@ -1,23 +1,32 @@
 package com.example.projectlxp.course.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.course.dto.CourseDTO;
-import com.example.projectlxp.course.dto.CourseResponse;
-import com.example.projectlxp.course.dto.CourseSaveRequest;
-import com.example.projectlxp.course.dto.CourseUpdateRequest;
+import com.example.projectlxp.course.dto.request.CourseSaveRequest;
+import com.example.projectlxp.course.dto.request.CourseSearchRequest;
+import com.example.projectlxp.course.dto.request.CourseUpdateRequest;
+import com.example.projectlxp.course.dto.response.CourseResponse;
 import com.example.projectlxp.course.service.CourseService;
+import com.example.projectlxp.global.config.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
+import com.example.projectlxp.global.dto.PageDTO;
+import com.example.projectlxp.global.dto.PageResponse;
 
 @RestController
 @RequestMapping("/courses")
@@ -29,6 +38,15 @@ public class CourseController {
         this.courseService = courseService;
     }
 
+    @GetMapping
+    public PageResponse<List<CourseDTO>> searchAll(
+            @PageableDefault Pageable pageable,
+            @ModelAttribute CourseSearchRequest request,
+            @CurrentUserId Long userId) {
+        Page<CourseDTO> data = courseService.searchCourses(request, pageable, userId);
+        return PageResponse.success(data.toList(), PageDTO.of(data));
+    }
+
     @GetMapping("/{courseId}")
     public BaseResponse<CourseResponse> search(@PathVariable Long courseId) {
         return BaseResponse.success(courseService.searchCourse(courseId));
@@ -36,7 +54,7 @@ public class CourseController {
 
     @PostMapping
     public BaseResponse<CourseResponse> registerCourse(
-            @RequestBody @Valid CourseSaveRequest request, @RequestParam Long userId) {
+            @RequestBody @Valid CourseSaveRequest request, @CurrentUserId Long userId) {
         return BaseResponse.success(courseService.saveCourse(request, userId));
     }
 
@@ -44,13 +62,13 @@ public class CourseController {
     public BaseResponse<CourseDTO> updateCourse(
             @PathVariable Long courseId,
             @RequestBody CourseUpdateRequest request,
-            @RequestParam Long userId) {
+            @CurrentUserId Long userId) {
         return BaseResponse.success(courseService.updateCourse(courseId, request, userId));
     }
 
     @DeleteMapping("/{courseId}")
     public BaseResponse<Boolean> deleteCourse(
-            @PathVariable Long courseId, @RequestParam Long userId) {
+            @PathVariable Long courseId, @CurrentUserId Long userId) {
         return BaseResponse.success("강좌 삭제 성공", courseService.deleteCourse(courseId, userId));
     }
 }
