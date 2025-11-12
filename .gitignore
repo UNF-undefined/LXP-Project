@@ -39,3 +39,4 @@ out/
 ### Project Settings ###
 /src/main/resources/application-local.yml
 /src/main/resources/application-test.yml
+/src/main/generated/

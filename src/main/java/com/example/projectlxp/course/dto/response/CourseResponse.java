@@ -1,4 +1,6 @@
-package com.example.projectlxp.course.dto;
+package com.example.projectlxp.course.dto.response;
+
+import com.example.projectlxp.course.dto.CourseDTO;
 
 public record CourseResponse(CourseDTO course, String section) {
 
