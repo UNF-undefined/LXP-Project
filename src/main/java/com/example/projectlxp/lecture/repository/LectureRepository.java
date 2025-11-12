@@ -20,7 +20,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     @Query(
             "SELECT l FROM Lecture l "
-                    + "JOIN l.section s "
+                    + "JOIN FETCH l.section s "
                     + "WHERE s.course = :course "
                     + "ORDER BY s.orderNo, l.orderNo")
     List<Lecture> findLecturesByCourse(@Param("course") Course course);
