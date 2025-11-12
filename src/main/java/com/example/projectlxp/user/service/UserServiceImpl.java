@@ -62,8 +62,13 @@ public class UserServiceImpl implements UserService {
 
     // 회원 정보조회
     @Override
-    @Transactional(readOnly = true)
     public UserResponseDTO getMyInfo(Long userId) {
+
+        User user = getUser(userId);
+        return new UserResponseDTO(user);
+    }
+
+    private User getUser(Long userId) {
         User user =
                 userRepository
                         .findById(userId)
@@ -71,28 +76,16 @@ public class UserServiceImpl implements UserService {
                                 () ->
                                         new UsernameNotFoundException(
                                                 "인증된 사용자를 찾을 수 없습니다. ID: " + userId));
-        return new UserResponseDTO(user);
+        return user;
     }
 
     // 회원 정보수정
     @Override
     @Transactional
     public UserResponseDTO updateMyInfo(Long userId, UserUpdateRequestDTO requestDTO) {
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new UsernameNotFoundException(
-                                                "수정할 사용자를 찾을 수 없습니다. ID" + userId));
+        User user = getUser(userId);
 
-        if (requestDTO.getName() != null) {
-            user.updateName(requestDTO.getName());
-        }
-        if (requestDTO.getProfileImage() != null) {
-            user.updateProfileImage(requestDTO.getProfileImage());
-        }
-
+        user.updateInfo(requestDTO.getName(), requestDTO.getProfileImage());
         return new UserResponseDTO(user);
     }
 
