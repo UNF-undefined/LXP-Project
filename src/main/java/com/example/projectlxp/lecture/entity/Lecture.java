@@ -91,4 +91,11 @@ public class Lecture extends BaseEntity {
             String duration) {
         return new Lecture(title, type, orderNo, fileURL, section, duration);
     }
+
+    public Lecture updateLecture(String title, int orderNo) {
+        this.title = title != null ? title : this.title;
+        this.orderNo = orderNo != 0 ? orderNo : this.orderNo;
+
+        return this;
+    }
 }
