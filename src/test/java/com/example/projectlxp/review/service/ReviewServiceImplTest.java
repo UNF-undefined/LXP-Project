@@ -104,7 +104,7 @@ class ReviewServiceImplTest {
         assertThat(response.getData()).anyMatch(dto -> dto.getUsername().equals("알 수 없음"));
     }
 
-    // [ 기능 m2: 리뷰 작성 (정상) ]
+    // [ 기능 2: 리뷰 작성 (정상) ]
     @Test
     @DisplayName("리뷰 작성: '성공' 케이스")
     void createReview_Success() {
