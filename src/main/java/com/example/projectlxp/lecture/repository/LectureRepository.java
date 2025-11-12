@@ -24,4 +24,28 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
                     + "WHERE s.course = :course "
                     + "ORDER BY s.orderNo, l.orderNo")
     List<Lecture> findLecturesByCourse(@Param("course") Course course);
+
+    /** orderNo를 올릴 때 사용합니다. */
+    @Modifying
+    @Query(
+            "UPDATE Lecture l SET l.orderNo = l.orderNo + 1 "
+                    + "WHERE l.section.id = :sectionId "
+                    + "AND l.orderNo >= :newOrderNo "
+                    + "AND l.orderNo < :oldOrderNo")
+    void incrementOrderBetween(
+            @Param("sectionId") Long sectionId,
+            @Param("oldOrderNo") int oldOrderNo,
+            @Param("newOrderNo") int newOrderNo);
+
+    /** orderNo를 내릴 때 사용합니다. */
+    @Modifying
+    @Query(
+            "UPDATE Lecture l SET l.orderNo = l.orderNo - 1 "
+                    + "WHERE l.section.id = :sectionId "
+                    + "AND l.orderNo > :oldOrderNo "
+                    + "AND l.orderNo <= :newOrderNo")
+    void decrementOrderBetween(
+            @Param("sectionId") Long sectionId,
+            @Param("oldOrderNo") int oldOrderNo,
+            @Param("newOrderNo") int newOrderNo);
 }
