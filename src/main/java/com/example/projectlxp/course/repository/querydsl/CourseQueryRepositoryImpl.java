@@ -49,8 +49,15 @@ public class CourseQueryRepositoryImpl implements CourseQueryRepository {
     }
 
     private BooleanExpression inCategories(List<Long> categoryIds) {
-        return nonNull(categoryIds) && !categoryIds.isEmpty()
-                ? course.category.id.in(categoryIds)
-                : null;
+        BooleanExpression result = null;
+
+        if (nonNull(categoryIds) && !categoryIds.isEmpty()) {
+            BooleanExpression isLeafCategory = course.category.id.in(categoryIds);
+            BooleanExpression isParentCategory = course.category.parent.id.in(categoryIds);
+
+            result = isLeafCategory.or(isParentCategory);
+        }
+
+        return result;
     }
 }
