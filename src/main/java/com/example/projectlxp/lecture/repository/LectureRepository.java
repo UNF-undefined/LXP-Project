@@ -1,10 +1,14 @@
 package com.example.projectlxp.lecture.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.lecture.entity.Lecture;
 
 @Repository
@@ -13,4 +17,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Lecture l SET l.isDeleted = true WHERE l.section.id = :sectionId")
     void deleteBySectionId(Long sectionId);
+
+    @Query(
+            "SELECT l FROM Lecture l "
+                    + "JOIN l.section s "
+                    + "WHERE s.course = :course "
+                    + "ORDER BY s.orderNo, l.orderNo")
+    List<Lecture> findLecturesByCourse(@Param("course") Course course);
 }

@@ -1,5 +1,7 @@
 package com.example.projectlxp.enrollment.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +22,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
                     "SELECT COUNT(e) FROM Enrollment e WHERE e.user.id = :userId AND e.isHidden = :isHidden")
     Page<Enrollment> findVisibleByUserIdWithCourse(
             @Param("userId") Long userId, @Param("isHidden") Boolean isHidden, Pageable pageable);
+
+    @Query(
+            "SELECT e FROM Enrollment e "
+                    + "JOIN FETCH e.user u "
+                    + "JOIN FETCH e.course c "
+                    + "WHERE e.id = :enrollmentId AND u.id = :userId")
+    Optional<Enrollment> findDetailByIdAndUserId(
+            @Param("enrollmentId") Long enrollmentId, @Param("userId") Long userId);
 }

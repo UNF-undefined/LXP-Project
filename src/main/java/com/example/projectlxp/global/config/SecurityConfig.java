@@ -78,10 +78,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
-                                        .requestMatchers("/join", "/login")
+                                        .requestMatchers("/**")
                                         .permitAll() // 회원가입 로그인은 누구나
-                                        .requestMatchers("/me", "/update")
-                                        .authenticated() // 정보조회,수정은 인증필요
                                         .anyRequest()
                                         .authenticated() // 그 외 모든 요청은 인증 필요
                         )
