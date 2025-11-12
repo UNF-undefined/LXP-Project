@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.course.repository.querydsl.CourseQueryRepository;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, Long> {
+public interface CourseRepository extends JpaRepository<Course, Long>, CourseQueryRepository {
 
     @Query(
             """

@@ -1,4 +1,4 @@
-package com.example.projectlxp.global.config;
+package com.example.projectlxp.global.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

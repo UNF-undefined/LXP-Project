@@ -1,4 +1,4 @@
-package com.example.projectlxp.course.dto;
+package com.example.projectlxp.course.dto.request;
 
 import com.example.projectlxp.course.entity.CourseLevel;
 

@@ -33,7 +33,7 @@ public class CustomUserDetailService implements UserDetailsService {
                         .orElseThrow(
                                 () ->
                                         new UsernameNotFoundException(
-                                                "User not found with username: " + email));
+                                                "인증된 이메일을 찾을 수 없습니다. email : " + email));
 
         return new CustomUserDetails(
                 user.getId(),
