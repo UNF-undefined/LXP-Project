@@ -24,6 +24,9 @@ import com.example.projectlxp.ControllerTestSupport;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledLectureDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledSectionDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 
 class EnrollmentControllerTest extends ControllerTestSupport {
@@ -146,7 +149,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                         .courseId(101L)
                         .courseTitle("Java Basics")
                         .isHidden(true)
-                        .progress(0)
                         .build();
 
         given(enrollmentService.hideEnrollment(userId, enrollmentId)).willReturn(responseDTO);
@@ -165,6 +167,71 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.data.hidden").value(true));
     }
 
+    @WithMockUser // Spring Security가 적용된 엔드포인트일 경우를 대비해 추가
+    @DisplayName("수강중인 강좌의 상세 정보를 조회한다.")
+    @Test
+    void getMyCourseDetail_Success() throws Exception {
+        // given
+        Long userId = 1L;
+        Long enrollmentId = 1L;
+
+        EnrolledLectureDTO lecture1 =
+                EnrolledLectureDTO.builder()
+                        .lectureId(101L)
+                        .title("1-1강: DI와 IoC")
+                        .completed(true)
+                        .build();
+
+        EnrolledLectureDTO lecture2 =
+                EnrolledLectureDTO.builder()
+                        .lectureId(102L)
+                        .title("1-2강: AOP란?")
+                        .completed(false)
+                        .build();
+
+        EnrolledSectionDTO section1 =
+                EnrolledSectionDTO.builder()
+                        .sectionId(201L)
+                        .sectionTitle("섹션 1: 스프링 핵심 원리")
+                        .lectures(List.of(lecture1, lecture2))
+                        .build();
+
+        EnrolledCourseDetailDTO responseDTO =
+                EnrolledCourseDetailDTO.builder()
+                        .enrollmentId(enrollmentId)
+                        .enrolledAt(LocalDateTime.now()) // 실제 값은 중요하지 않음
+                        .courseId(301L)
+                        .courseTitle("스프링 부트 완벽 가이드")
+                        .instructorName("김강사")
+                        .courseThumbnailUrl("http://path.to/thumb.jpg")
+                        .completionRate(50.0)
+                        .sections(List.of(section1))
+                        .build();
+
+        given(enrollmentService.getMyEnrolledCourseDetail(userId, enrollmentId))
+                .willReturn(responseDTO);
+
+        // when // then
+        mockMvc.perform(
+                        get("/enrollments/{enrollmentId}/detail", enrollmentId)
+                                .param("userId", String.valueOf(userId))
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.code").value("OK"))
+                .andExpect(jsonPath("$.message").value("수강중인 강좌 상세 조회를 성공했습니다."))
+                .andExpect(jsonPath("$.data.enrollmentId").value(enrollmentId))
+                .andExpect(jsonPath("$.data.courseTitle").value("스프링 부트 완벽 가이드"))
+                .andExpect(jsonPath("$.data.instructorName").value("김강사"))
+                .andExpect(jsonPath("$.data.completionRate").value(50.0))
+                .andExpect(jsonPath("$.data.sections[0].sectionTitle").value("섹션 1: 스프링 핵심 원리"))
+                .andExpect(jsonPath("$.data.sections[0].lectures[0].title").value("1-1강: DI와 IoC"))
+                .andExpect(jsonPath("$.data.sections[0].lectures[0].completed").value(true))
+                .andExpect(jsonPath("$.data.sections[0].lectures[1].title").value("1-2강: AOP란?"))
+                .andExpect(jsonPath("$.data.sections[0].lectures[1].completed").value(false));
+    }
+
     @WithMockUser
     @DisplayName("수강 강좌 숨김 해제 API 성공")
     @Test
@@ -179,7 +246,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                         .courseId(101L)
                         .courseTitle("Java Basics")
                         .isHidden(false)
-                        .progress(0)
                         .build();
 
         given(enrollmentService.unhideEnrollment(userId, enrollmentId)).willReturn(responseDTO);
@@ -203,7 +269,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                 .enrollmentId(1L)
                 .courseId(101L)
                 .courseTitle(title)
-                .progress(0)
                 .isHidden(isHidden)
                 .build();
     }
