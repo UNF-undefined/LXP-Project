@@ -59,4 +59,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             @Param("sectionId") Long sectionId,
             @Param("oldOrderNo") int oldOrderNo,
             @Param("newOrderNo") int newOrderNo);
+
+    @Modifying
+    @Query(
+            "UPDATE Lecture l SET l.orderNo = l.orderNo - 1"
+                    + " WHERE l.section.id = :sectionId AND l.orderNo > :orderNo")
+    void decrementOrderAfterDelete(
+            @Param("sectionId") Long sectionId, @Param("orderNo") int deletedOrderNo);
 }
