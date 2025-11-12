@@ -23,21 +23,22 @@ public class EnrolledCourseDetailDTO {
     private String instructorName;
     private String courseThumbnailUrl;
     private double completionRate;
-    private List<EnrolledLectureDTO> lectures;
+    private List<EnrolledSectionDTO> sections;
 
     public static EnrolledCourseDetailDTO of(
             Enrollment enrollment,
             Course course,
             double completionRate,
-            List<EnrolledLectureDTO> lectures) {
+            List<EnrolledSectionDTO> sections) {
         return EnrolledCourseDetailDTO.builder()
                 .enrollmentId(enrollment.getId())
                 .enrolledAt(enrollment.getCreatedAt())
                 .courseId(course.getId())
                 .courseTitle(course.getTitle())
                 .instructorName(course.getInstructor().getName())
+                .courseThumbnailUrl(course.getThumbnail())
                 .completionRate(completionRate)
-                .lectures(lectures)
+                .sections(sections)
                 .build();
     }
 }

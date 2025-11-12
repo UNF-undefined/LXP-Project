@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.projectlxp.global.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.user.entity.Role;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -32,6 +34,8 @@ class EnrollmentRepositoryTest {
     @Autowired private UserRepository userRepository;
     @Autowired private CourseRepository courseRepository;
     @Autowired private CategoryRepository categoryRepository;
+//    @MockitoBean
+//    private JwtTokenProvider jwtTokenProvider;
 
     @AfterEach
     void tearDown() {
