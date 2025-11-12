@@ -6,9 +6,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
+import com.example.projectlxp.IntegrationTestSupport;
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.category.repository.CategoryRepository;
 import com.example.projectlxp.course.entity.Course;
@@ -21,9 +20,7 @@ import com.example.projectlxp.user.entity.Role;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
-@ActiveProfiles("test")
-@SpringBootTest
-class EnrollmentValidatorTest {
+class EnrollmentValidatorTest extends IntegrationTestSupport {
     @Autowired private EnrollmentValidator enrollmentValidator;
     @Autowired private EnrollmentRepository enrollmentRepository;
     @Autowired private UserRepository userRepository;

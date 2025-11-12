@@ -16,33 +16,17 @@ import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.projectlxp.ControllerTestSupport;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
-import com.example.projectlxp.enrollment.service.EnrollmentService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WithMockUser
-@ActiveProfiles("test")
-@WebMvcTest(EnrollmentController.class)
-@AutoConfigureMockMvc(addFilters = false)
-class EnrollmentControllerTest {
-    @Autowired private MockMvc mockMvc;
-
-    @MockitoBean private EnrollmentService enrollmentService;
-
-    @Autowired private ObjectMapper objectMapper;
+class EnrollmentControllerTest extends ControllerTestSupport {
 
     @DisplayName("강좌 수강신청을 성공한다.")
     @Test
@@ -98,7 +82,6 @@ class EnrollmentControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @WithMockUser
     @DisplayName("숨김 처리 상태가 수강 목록을 제외하고 내 수강 목록을 성공적으로 조회한다.")
     @Test
     void getMyCourses_Success() throws Exception {

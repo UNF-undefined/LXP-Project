@@ -1,5 +1,6 @@
 package com.example.projectlxp.section.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.section.entity.Section;
 
 @Repository
@@ -38,4 +40,6 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     WHERE s.id = :id
     """)
     Optional<Section> findByIdWithCourseAndInstructor(@Param("id") Long id);
+
+    List<Section> findAllByCourseOrderByOrderNoAsc(Course course);
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.service.EnrollmentService;
 import com.example.projectlxp.global.dto.BaseResponse;
@@ -35,6 +36,14 @@ public class EnrollmentController {
         CreateEnrollmentResponseDTO createEnrollmentResponseDTO =
                 enrollmentService.enrollCourse(userId, requestDTO);
         return BaseResponse.success("수강신청이 성공적으로 완료되었습니다.", createEnrollmentResponseDTO);
+    }
+
+    @GetMapping("/{enrollmentId}/detail")
+    public BaseResponse<EnrolledCourseDetailDTO> getMyCourseDetail(
+            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+        EnrolledCourseDetailDTO enrolledCourseDetailDTO =
+                enrollmentService.getMyEnrolledCourseDetail(userId, enrollmentId);
+        return BaseResponse.success("수강중인 강좌 상세 조회를 성공했습니다.", enrolledCourseDetailDTO);
     }
 
     @GetMapping("/my")

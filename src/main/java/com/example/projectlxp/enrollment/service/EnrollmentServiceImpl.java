@@ -1,5 +1,10 @@
 package com.example.projectlxp.enrollment.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -11,11 +16,20 @@ import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledLectureDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledSectionDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.entity.Enrollment;
+import com.example.projectlxp.enrollment.entity.LectureProgress;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
+import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
 import com.example.projectlxp.enrollment.service.validator.EnrollmentValidator;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.entity.Lecture;
+import com.example.projectlxp.lecture.repository.LectureRepository;
+import com.example.projectlxp.section.entity.Section;
+import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
@@ -26,16 +40,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final SectionRepository sectionRepository;
+    private final LectureRepository lectureRepository;
+    private final LectureProgressRepository lectureProgressRepository;
     private final EnrollmentValidator enrollmentValidator;
 
     public EnrollmentServiceImpl(
             EnrollmentRepository enrollmentRepository,
             UserRepository userRepository,
             CourseRepository courseRepository,
+            SectionRepository sectionRepository,
+            LectureRepository lectureRepository,
+            LectureProgressRepository lectureProgressRepository,
             EnrollmentValidator enrollmentValidator) {
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
+        this.sectionRepository = sectionRepository;
+        this.lectureRepository = lectureRepository;
+        this.lectureProgressRepository = lectureProgressRepository;
         this.enrollmentValidator = enrollmentValidator;
     }
 
@@ -71,6 +94,106 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         return CreateEnrollmentResponseDTO.from(savedEnrollment);
+    }
+
+    @Override
+    public EnrolledCourseDetailDTO getMyEnrolledCourseDetail(Long userId, Long enrollmentId) {
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(
+                                () -> new CustomBusinessException("존재하지 않는 회원입니다. ID: " + userId));
+        Enrollment enrollment =
+                enrollmentRepository
+                        .findDetailByIdAndUserId(enrollmentId, user.getId())
+                        .orElseThrow(
+                                () ->
+                                        new CustomBusinessException(
+                                                "수강신청 정보를 찾을 수 없거나 권한이 없습니다. ID: " + enrollmentId));
+
+        Course enrolledCourse = enrollment.getCourse();
+        List<Lecture> enrolledCourseLectures =
+                lectureRepository.findLecturesByCourse(enrolledCourse);
+        List<Section> enrolledCourseSections =
+                sectionRepository.findAllByCourseOrderByOrderNoAsc(enrolledCourse);
+
+        Map<Long, Boolean> progressMap = createLectureProgressMap(enrollment);
+        double completionRate = calculateCompletionRate(enrolledCourseLectures.size(), progressMap);
+
+        List<EnrolledSectionDTO> sectionDTOs =
+                createEnrolledSectionDTOs(
+                        enrolledCourseSections, enrolledCourseLectures, progressMap);
+        return EnrolledCourseDetailDTO.of(enrollment, enrolledCourse, completionRate, sectionDTOs);
+    }
+
+    /**
+     * 섹션 목록과 전체 강의 목록을 조합하여, 계층 구조를 가진 EnrolledSectionDTO 리스트를 생성합니다.
+     *
+     * @param sections 강좌의 모든 섹션 (순서대로 정렬됨)
+     * @param lectures 강좌의 모든 강의
+     * @param progressMap 강의별 완료 여부 맵
+     * @return List<EnrolledSectionDTO>
+     */
+    private List<EnrolledSectionDTO> createEnrolledSectionDTOs(
+            List<Section> sections, List<Lecture> lectures, Map<Long, Boolean> progressMap) {
+
+        // Lecture DTO를 만들고, Section ID를 기준으로 그룹화
+        Map<Long, List<EnrolledLectureDTO>> lectureDTOsBySectionId =
+                lectures.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        lecture -> lecture.getSection().getId(),
+                                        Collectors.mapping(
+                                                lecture ->
+                                                        EnrolledLectureDTO.of(lecture, progressMap),
+                                                Collectors.toList())));
+
+        // 정렬된 섹션 목록을 순회하며 DTO 조립
+        return sections.stream()
+                .map(
+                        section -> {
+                            // 1번 맵에서 현재 섹션에 해당하는 강의 DTO 리스트를 가져옴
+                            List<EnrolledLectureDTO> lecturesForThisSection =
+                                    lectureDTOsBySectionId.getOrDefault(
+                                            section.getId(), Collections.emptyList());
+
+                            return EnrolledSectionDTO.of(section, lecturesForThisSection);
+                        })
+                .toList();
+    }
+
+    /**
+     * LectureProgress 리스트를 (Key: Lecture ID, Value: 완료 여부) Map으로 변환하는 메서드.
+     *
+     * @param enrollment 수강 중인 Enrollment 엔티티
+     * @return Map<Long, Boolean> (LectureId, Completed)
+     */
+    private Map<Long, Boolean> createLectureProgressMap(Enrollment enrollment) {
+        List<LectureProgress> progresses =
+                lectureProgressRepository.findAllByEnrollmentWithLecture(enrollment);
+        return progresses.stream()
+                .collect(
+                        Collectors.toMap(
+                                progress -> progress.getLecture().getId(),
+                                LectureProgress::isCompleted));
+    }
+
+    /**
+     * 전체 진도율(%)을 계산하는 메서드
+     *
+     * @param totalLectures 강좌의 전체 강의 수
+     * @param progressMap Key: Lecture ID, Value: 완료 여부(boolean)
+     * @return 진도율 (0.0 ~ 100.0)
+     */
+    private double calculateCompletionRate(long totalLectures, Map<Long, Boolean> progressMap) {
+        long completedLectures =
+                progressMap.values().stream().filter(Boolean::booleanValue).count();
+
+        if (totalLectures == 0) {
+            return 0.0;
+        }
+
+        return ((double) completedLectures / totalLectures) * 100.0;
     }
 
     @Override
