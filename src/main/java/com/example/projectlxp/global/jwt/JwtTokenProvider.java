@@ -12,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import com.example.projectlxp.user.dto.CustomUserDetails;
@@ -27,7 +26,7 @@ public class JwtTokenProvider {
 
     private final SecretKey key;
     private final long accessTokenExpirationMs;
-    private final long freshTokenExpirationMs;
+    private final long refreshTokenExpirationMs;
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String USER_ID_KEY = "userId";
@@ -43,7 +42,7 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         // 필드 값 할당
-        this.freshTokenExpirationMs = freshTokenExpirationMs;
+        this.refreshTokenExpirationMs = freshTokenExpirationMs;
     }
 
     // 토큰 생성 메서드 (로그인 성공 시 호출됨)
@@ -79,7 +78,7 @@ public class JwtTokenProvider {
     public String createRefreshToken(Authentication authentication) {
 
         long now = (new Date()).getTime();
-        Date validity = new Date(now + this.freshTokenExpirationMs); // 만료시간(김)
+        Date validity = new Date(now + this.refreshTokenExpirationMs); // 만료시간(김)
 
         return Jwts.builder()
                 .setSubject(authentication.getName()) // 로그인할 아이디 email
@@ -88,11 +87,8 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    /*
-     * 토큰에서 인증 정보 추출
-     * */
+    // 인증 정보 추출 메서드
     public Authentication getAuthentication(String token) {
-        // 토큰을 복호화하여 claims을 꺼냄
         Claims claims =
                 Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
@@ -101,9 +97,9 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        Long userId = claims.get(USER_ID_KEY, Long.class);
 
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        return new UsernamePasswordAuthenticationToken(userId, null, authorities);
     }
 
     // 토큰 검증 메서드
