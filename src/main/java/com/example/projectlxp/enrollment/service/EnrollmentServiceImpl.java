@@ -3,9 +3,11 @@ package com.example.projectlxp.enrollment.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.enrollment.entity.LectureProgress;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
 import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
+import com.example.projectlxp.enrollment.repository.projection.CompletedLectureCountProjection;
+import com.example.projectlxp.enrollment.repository.projection.LectureCountProjection;
 import com.example.projectlxp.enrollment.service.validator.EnrollmentValidator;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.entity.Lecture;
@@ -209,8 +213,89 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollmentRepository.findVisibleByUserIdWithCourse(
                         user.getId(), isHidden, pageable);
 
-        Page<EnrolledCourseDTO> enrolledCourseDTOPage = enrollmentPage.map(EnrolledCourseDTO::from);
+        Page<EnrolledCourseDTO> enrolledCourseDTOPage = createEnrolledCourseDTOPage(enrollmentPage);
         return PagedEnrolledCourseDTO.from(enrolledCourseDTOPage);
+    }
+
+    /**
+     * Enrollment 페이지를 받아, N+1 문제 없이 진도율을 계산하여 EnrolledCourseDTO 페이지로 변환합니다.
+     *
+     * @param enrollmentPage 원본 Enrollment 페이지
+     * @return 진도율이 계산된 DTO 페이지
+     */
+    private Page<EnrolledCourseDTO> createEnrolledCourseDTOPage(Page<Enrollment> enrollmentPage) {
+
+        List<Enrollment> enrollments = enrollmentPage.getContent();
+        if (enrollments.isEmpty()) {
+            return Page.empty();
+        }
+
+        Map<Long, Long> totalLectureMap = getTotalLectureMap(enrollments);
+        Map<Long, Long> completedLectureMap = getCompletedLectureMap(enrollments);
+
+        List<EnrolledCourseDTO> dtoList =
+                createEnrolledCourseDTOList(enrollments, totalLectureMap, completedLectureMap);
+
+        return new PageImpl<>(
+                dtoList, enrollmentPage.getPageable(), enrollmentPage.getTotalElements());
+    }
+
+    /** Enrollment 리스트를 받아 강좌별 총 강의 수를 Map으로 반환합니다. (Batch 조회) */
+    private Map<Long, Long> getTotalLectureMap(List<Enrollment> enrollments) {
+        Set<Long> courseIds =
+                enrollments.stream().map(e -> e.getCourse().getId()).collect(Collectors.toSet());
+        List<LectureCountProjection> totalLectureCountsByCourseIds =
+                lectureRepository.findLectureCountsByCourseIds(courseIds);
+        return totalLectureCountsByCourseIds.stream()
+                .collect(
+                        Collectors.toMap(
+                                LectureCountProjection::getCourseId,
+                                LectureCountProjection::getLectureCount));
+    }
+
+    /** Enrollment 리스트를 받아 수강별 완료 강의 수를 Map으로 반환합니다. (Batch 조회) */
+    private Map<Long, Long> getCompletedLectureMap(List<Enrollment> enrollments) {
+        Set<Long> enrollmentIds =
+                enrollments.stream().map(Enrollment::getId).collect(Collectors.toSet());
+        List<CompletedLectureCountProjection> completedLectureCountsByEnrollmentIds =
+                lectureProgressRepository.findCompletedLectureCountsByEnrollmentIds(enrollmentIds);
+        return completedLectureCountsByEnrollmentIds.stream()
+                .collect(
+                        Collectors.toMap(
+                                CompletedLectureCountProjection::getEnrollmentId,
+                                CompletedLectureCountProjection::getCompletedCount));
+    }
+
+    /** Enrollment 리스트와 진도율 데이터를 조합하여 DTO 리스트를 생성합니다. */
+    private List<EnrolledCourseDTO> createEnrolledCourseDTOList(
+            List<Enrollment> enrollments,
+            Map<Long, Long> totalLectureMap,
+            Map<Long, Long> completedLectureMap) {
+
+        return enrollments.stream()
+                .map(
+                        enrollment -> {
+                            long courseId = enrollment.getCourse().getId();
+                            long enrollmentId = enrollment.getId();
+
+                            long totalLectures = totalLectureMap.getOrDefault(courseId, 0L);
+                            long completedLectures =
+                                    completedLectureMap.getOrDefault(enrollmentId, 0L);
+
+                            double completionRate =
+                                    calculateCompletionRate(totalLectures, completedLectures);
+
+                            return EnrolledCourseDTO.of(enrollment, completionRate);
+                        })
+                .toList();
+    }
+
+    /** 진도율(%)을 계산하는 유틸리티 메서드 */
+    private double calculateCompletionRate(long totalLectures, long completedLectures) {
+        if (totalLectures == 0) {
+            return 0.0;
+        }
+        return ((double) completedLectures / totalLectures) * 100.0;
     }
 
     @Override

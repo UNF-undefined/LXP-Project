@@ -17,17 +17,29 @@ public class EnrolledCourseDTO {
     private Long courseId;
     private String courseTitle;
     private String thumbnail;
-    private int progress;
+    private double completionRate;
     private boolean isHidden;
+
+    public static EnrolledCourseDTO of(Enrollment enrollment, double completionRate) {
+        Course course = enrollment.getCourse();
+        return EnrolledCourseDTO.builder()
+                .enrollmentId(enrollment.getId())
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .thumbnail(course.getThumbnail())
+                .completionRate(completionRate)
+                .isHidden(enrollment.isHidden())
+                .build();
+    }
 
     public static EnrolledCourseDTO from(Enrollment enrollment) {
         Course course = enrollment.getCourse();
-        return new EnrolledCourseDTO(
-                enrollment.getId(),
-                course.getId(),
-                course.getTitle(),
-                course.getThumbnail(),
-                enrollment.getProgress(),
-                enrollment.isHidden());
+        return EnrolledCourseDTO.builder()
+                .enrollmentId(enrollment.getId())
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .thumbnail(course.getThumbnail())
+                .isHidden(enrollment.isHidden())
+                .build();
     }
 }
