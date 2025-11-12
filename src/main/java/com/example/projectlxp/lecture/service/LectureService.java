@@ -2,6 +2,7 @@ package com.example.projectlxp.lecture.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
@@ -29,4 +30,11 @@ public interface LectureService {
      * @return LectureUpdateResponseDTO
      */
     LectureUpdateResponseDTO modifyLecture(LectureModifyDTO modifyInfo);
+
+    /**
+     * 강의를 삭제합니다.
+     *
+     * @param deleteInfo 강의 삭제 시 필요한 정보들
+     */
+    void removeLecture(LectureDeleteDTO deleteInfo);
 }
