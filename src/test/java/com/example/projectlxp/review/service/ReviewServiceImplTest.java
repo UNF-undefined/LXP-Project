@@ -164,7 +164,7 @@ class ReviewServiceImplTest {
     }
 
     @Test
-    @DisplayName("리뷰 작성: '비속어'가 '포함'된 '경우', '마스킹'되어 '저장'/'반환'된다")
+    @DisplayName("리뷰 작성: 비속어가 포함된 경우, 마스킹되어 저장/반환된다")
     void createReview_WithProfanity_ShouldBeMasked() {
         // --- [ Given ] ---
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
