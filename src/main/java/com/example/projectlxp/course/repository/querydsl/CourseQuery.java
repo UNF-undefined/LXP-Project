@@ -38,10 +38,10 @@ public class CourseQuery extends JPAQuery<Course> {
             QCategory category) {
         super(em);
         this.course = course;
-        this.review = review;
-        this.enrollment = enrollment;
-        this.user = user;
-        this.category = category;
+        this.review = review != null ? review : QReview.review;
+        this.enrollment = enrollment != null ? enrollment : QEnrollment.enrollment;
+        this.user = user != null ? user : QUser.user;
+        this.category = category != null ? category : QCategory.category;
     }
 
     public CourseQuery fromCourse() {
@@ -67,16 +67,16 @@ public class CourseQuery extends JPAQuery<Course> {
     public CourseQuery orderByDefault(CourseSortBy sortBy) {
         switch (sortBy) {
             case RATING ->
-                    leftJoin(course.reviews, review)
+                    this.leftJoin(course.reviews, review)
                             .groupBy(course.id)
                             .orderBy(review.rating.avg().desc());
             case POPULARITY ->
-                    leftJoin(course.enrollments, enrollment)
+                    this.leftJoin(course.enrollments, enrollment)
                             .groupBy(course.id)
                             .orderBy(enrollment.count().desc());
-            case PRICE_ASC -> orderBy(course.price.asc());
-            case PRICE_DESC -> orderBy(course.price.desc());
-            default -> orderBy(course.createdAt.desc());
+            case PRICE_ASC -> this.orderBy(course.price.asc());
+            case PRICE_DESC -> this.orderBy(course.price.desc());
+            default -> this.orderBy(course.createdAt.desc());
         }
         return this;
     }
