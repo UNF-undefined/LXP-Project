@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
+import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
 import com.example.projectlxp.lecture.service.LectureService;
@@ -50,7 +52,7 @@ public class LectureServiceImpl implements LectureService {
                         .orElseThrow(
                                 () ->
                                         new CustomBusinessException(
-                                                "없는 세션입니다.", HttpStatus.NOT_FOUND));
+                                                "섹션이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
         // check who create this lecture
         lectureValidator.validateLectureAuthority(
@@ -77,5 +79,49 @@ public class LectureServiceImpl implements LectureService {
                 savedLecture.getTitle(),
                 savedLecture.getType(),
                 savedLecture.getOrderNo());
+    }
+
+    @Override
+    @Transactional
+    public LectureUpdateResponseDTO modifyLecture(LectureModifyDTO modifyInfo) {
+        // Validate DTO
+        lectureValidator.validateLectureModifyInfo(modifyInfo);
+
+        // find Lecture
+        Lecture findLecture = findLectureAndException(modifyInfo.getLectureId());
+
+        // validate Lecture authority
+        lectureValidator.validateLectureAuthority(
+                findLecture.getSection().getCourse().getInstructor().getId(),
+                modifyInfo.getUserId());
+
+        // setup info
+        Long sectionId = findLecture.getSection().getId();
+        int oldOrderNo = findLecture.getOrderNo();
+        int newOrderNo = modifyInfo.getOrderNo();
+
+        // orderNo reorder
+        if (newOrderNo < oldOrderNo) {
+            lectureRepository.incrementOrderBetween(sectionId, oldOrderNo, newOrderNo);
+        } else {
+            lectureRepository.decrementOrderBetween(sectionId, oldOrderNo, newOrderNo);
+        }
+
+        // TODO : section을 변경하면 옮기는 section 내부에서의 orderNo도 변경되어야 해서 현재 보류
+        // update Lecture
+        Lecture updatedLecture = findLecture.updateLecture(modifyInfo.getTitle(), newOrderNo);
+
+        // convertDTO and return
+        return new LectureUpdateResponseDTO(
+                updatedLecture.getSection().getId(),
+                updatedLecture.getTitle(),
+                updatedLecture.getOrderNo());
+    }
+
+    private Lecture findLectureAndException(Long lectureId) {
+        return lectureRepository
+                .findById(lectureId)
+                .orElseThrow(
+                        () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }
