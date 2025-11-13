@@ -151,7 +151,7 @@ public class LectureServiceImpl implements LectureService {
         Long lectureId = detailInfo.lectureId();
 
         // find Lecture
-        Lecture findLecture = findLectureAndException(lectureId);
+        Lecture findLecture = findLectureDetail(lectureId);
 
         // validate lecture authority
         lectureValidator.validateLectureAuthority(
@@ -169,6 +169,13 @@ public class LectureServiceImpl implements LectureService {
     private Lecture findLectureAndException(Long lectureId) {
         return lectureRepository
                 .findById(lectureId)
+                .orElseThrow(
+                        () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    private Lecture findLectureDetail(Long lectureId) {
+        return lectureRepository
+                .findDetailById(lectureId)
                 .orElseThrow(
                         () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
