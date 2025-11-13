@@ -3,3 +3,4 @@ spring:
     name: LXP-Project
   profiles:
     active: local
+
