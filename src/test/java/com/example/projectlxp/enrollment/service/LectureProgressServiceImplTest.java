@@ -1,44 +1,40 @@
- package com.example.projectlxp.enrollment.service;
+package com.example.projectlxp.enrollment.service;
 
- import com.example.projectlxp.IntegrationTestSupport;
- import com.example.projectlxp.category.entity.Category;
- import com.example.projectlxp.category.repository.CategoryRepository;
- import com.example.projectlxp.course.entity.Course;
- import com.example.projectlxp.course.entity.CourseLevel;
- import com.example.projectlxp.course.repository.CourseRepository;
- import com.example.projectlxp.enrollment.entity.Enrollment;
- import com.example.projectlxp.enrollment.entity.LectureProgress;
- import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
- import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
- import com.example.projectlxp.global.error.CustomBusinessException;
- import com.example.projectlxp.global.events.LectureCompletedEvent;
- import com.example.projectlxp.lecture.entity.Lecture;
- import com.example.projectlxp.lecture.entity.LectureType;
- import com.example.projectlxp.lecture.repository.LectureRepository;
- import com.example.projectlxp.section.entity.Section;
- import com.example.projectlxp.section.repository.SectionRepository;
- import com.example.projectlxp.user.entity.Role;
- import com.example.projectlxp.user.entity.User;
- import com.example.projectlxp.user.repository.UserRepository;
- import org.junit.jupiter.api.AfterEach;
- import org.junit.jupiter.api.DisplayName;
- import org.junit.jupiter.api.Test;
- import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.context.ApplicationEventPublisher;
- import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.BDDAssertions.tuple;
 
- import java.time.LocalDateTime;
- import java.util.List;
+import java.time.LocalDateTime;
+import java.util.List;
 
- import static org.assertj.core.api.Assertions.assertThat;
- import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
- import static org.assertj.core.api.BDDAssertions.tuple;
- import static org.mockito.ArgumentMatchers.any;
- import static org.mockito.Mockito.never;
- import static org.mockito.Mockito.times;
- import static org.mockito.Mockito.verify;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
- class LectureProgressServiceImplTest extends IntegrationTestSupport {
+import com.example.projectlxp.IntegrationTestSupport;
+import com.example.projectlxp.category.entity.Category;
+import com.example.projectlxp.category.repository.CategoryRepository;
+import com.example.projectlxp.course.entity.Course;
+import com.example.projectlxp.course.entity.CourseLevel;
+import com.example.projectlxp.course.repository.CourseRepository;
+import com.example.projectlxp.enrollment.entity.Enrollment;
+import com.example.projectlxp.enrollment.entity.LectureProgress;
+import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
+import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
+import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.entity.Lecture;
+import com.example.projectlxp.lecture.entity.LectureType;
+import com.example.projectlxp.lecture.repository.LectureRepository;
+import com.example.projectlxp.section.entity.Section;
+import com.example.projectlxp.section.repository.SectionRepository;
+import com.example.projectlxp.user.entity.Role;
+import com.example.projectlxp.user.entity.User;
+import com.example.projectlxp.user.repository.UserRepository;
+
+class LectureProgressServiceImplTest extends IntegrationTestSupport {
 
     @Autowired private LectureProgressService lectureProgressService;
     @Autowired private UserRepository userRepository;
@@ -63,65 +59,59 @@
         userRepository.deleteAllInBatch();
     }
 
-     @DisplayName("강의 수강을 시작하면 LectureProgress가 생성된다.")
-     @Test
-     void markLectureAsStarted_createNewProgress() {
-         // given
-         User instructor = userRepository.save(createUser("instructor@test.com"));
-         User student = userRepository.save(createUser("student@test.com"));
-         Course course = createAndSaveCourse(instructor);
-         Section section = sectionRepository.save(createSection(course, "S1", 1));
-         Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
-         Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
+    @DisplayName("강의 수강을 시작하면 LectureProgress가 생성된다.")
+    @Test
+    void markLectureAsStarted_createNewProgress() {
+        // given
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Course course = createAndSaveCourse(instructor);
+        Section section = sectionRepository.save(createSection(course, "S1", 1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
 
-         // when
-         lectureProgressService.markLectureAsStarted(student.getId(), lecture.getId());
+        // when
+        lectureProgressService.markLectureAsStarted(student.getId(), lecture.getId());
 
-         // then
-         List<LectureProgress> progresses = lectureProgressRepository.findAll();
+        // then
+        List<LectureProgress> progresses = lectureProgressRepository.findAll();
 
-         assertThat(progresses).hasSize(1)
-                 .extracting(
-                         "enrollment.id",
-                         "lecture.id",
-                         "completed"
-                 )
-                 .containsExactly(
-                         tuple(enrollment.getId(), lecture.getId(), false)
-                 );
+        assertThat(progresses)
+                .hasSize(1)
+                .extracting("enrollment.id", "lecture.id", "completed")
+                .containsExactly(tuple(enrollment.getId(), lecture.getId(), false));
 
-         assertThat(progresses.get(0).getLastAccessedAt()).isNotNull();
-     }
+        assertThat(progresses.get(0).getLastAccessedAt()).isNotNull();
+    }
 
-     @DisplayName("이미 수강을 시작한 강의를 다시 시작하면 lastAccessedAt이 갱신된다.")
-     @Test
-     void markLectureAsStarted_updateExistingProgress() {
-         // given
-         User instructor = userRepository.save(createUser("instructor@test.com"));
-         User student = userRepository.save(createUser("student@test.com"));
-         Course course = createAndSaveCourse(instructor);
-         Section section = sectionRepository.save(createSection(course, "S1", 1));
-         Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
-         Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
+    @DisplayName("이미 수강을 시작한 강의를 다시 시작하면 lastAccessedAt이 갱신된다.")
+    @Test
+    void markLectureAsStarted_updateExistingProgress() {
+        // given
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Course course = createAndSaveCourse(instructor);
+        Section section = sectionRepository.save(createSection(course, "S1", 1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
 
-         // 1. 수강 기록(Progress)을 미리 생성
-         LectureProgress progress =
-                 lectureProgressRepository.save(createLectureProgress(enrollment, lecture));
-         LocalDateTime firstAccess = progress.getLastAccessedAt();
+        // 1. 수강 기록(Progress)을 미리 생성
+        LectureProgress progress =
+                lectureProgressRepository.save(createLectureProgress(enrollment, lecture));
+        LocalDateTime firstAccess = progress.getLastAccessedAt();
 
-         // when
-         lectureProgressService.markLectureAsStarted(student.getId(), lecture.getId());
+        // when
+        lectureProgressService.markLectureAsStarted(student.getId(), lecture.getId());
 
-         // then
-         List<LectureProgress> progresses = lectureProgressRepository.findAll();
-         assertThat(progresses).hasSize(1) // count() 검증 대체
-                 .extracting("enrollment.id", "lecture.id", "completed")
-                 .containsExactly(
-                         tuple(enrollment.getId(), lecture.getId(), false)
-                 );
+        // then
+        List<LectureProgress> progresses = lectureProgressRepository.findAll();
+        assertThat(progresses)
+                .hasSize(1) // count() 검증 대체
+                .extracting("enrollment.id", "lecture.id", "completed")
+                .containsExactly(tuple(enrollment.getId(), lecture.getId(), false));
 
-         assertThat(progresses.get(0).getLastAccessedAt()).isAfterOrEqualTo(firstAccess);
-     }
+        assertThat(progresses.get(0).getLastAccessedAt()).isAfterOrEqualTo(firstAccess);
+    }
 
     @DisplayName("강의 수강 시작 시 강의가 존재하지 않으면 예외가 발생한다.")
     @Test
@@ -139,78 +129,76 @@
                 .hasMessageContaining("존재하지 않는 강의입니다. lectureId=" + nonExistentLectureId);
     }
 
-     @DisplayName("강의 수강 시작 시 수강신청을 하지 않았으면 예외가 발생한다.")
-     @Test
-     void markLectureAsStarted_throwsException_whenEnrollmentNotFound() {
-         // given
-         User instructor = userRepository.save(createUser("instructor@test.com"));
-         User student = userRepository.save(createUser("student@test.com"));
-         Course course = createAndSaveCourse(instructor);
-         Section section = sectionRepository.save(createSection(course, "S1", 1));
-         Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
+    @DisplayName("강의 수강 시작 시 수강신청을 하지 않았으면 예외가 발생한다.")
+    @Test
+    void markLectureAsStarted_throwsException_whenEnrollmentNotFound() {
+        // given
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Course course = createAndSaveCourse(instructor);
+        Section section = sectionRepository.save(createSection(course, "S1", 1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
 
-         // when // then
-         assertThatThrownBy(
-                 () ->
-                         lectureProgressService.markLectureAsStarted(
-                                 student.getId(), lecture.getId()))
-                 .isInstanceOf(CustomBusinessException.class)
-                 .hasMessageContaining("해당 강의에 대한 수강신청 정보를 찾을 수 없습니다.");
-     }
+        // when // then
+        assertThatThrownBy(
+                        () ->
+                                lectureProgressService.markLectureAsStarted(
+                                        student.getId(), lecture.getId()))
+                .isInstanceOf(CustomBusinessException.class)
+                .hasMessageContaining("해당 강의에 대한 수강신청 정보를 찾을 수 없습니다.");
+    }
 
-     @DisplayName("강의를 완료를 완료하면 LectureProgress의 상태가 완료로 변경된다.")
-     @Test
-     void test() {
-         // given
-         User instructor = userRepository.save(createUser("instructor@test.com"));
-         User student = userRepository.save(createUser("student@test.com"));
-         Course course = createAndSaveCourse(instructor);
-         Section section = sectionRepository.save(createSection(course, "S1", 1));
-         Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
-         Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
+    @DisplayName("강의를 완료를 완료하면 LectureProgress의 상태가 완료로 변경된다.")
+    @Test
+    void test() {
+        // given
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Course course = createAndSaveCourse(instructor);
+        Section section = sectionRepository.save(createSection(course, "S1", 1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
 
-         // 1. 수강 기록이 '이미 완료됨' 상태로 존재
-         lectureProgressRepository.save(createLectureProgress(enrollment, lecture));
+        // 1. 수강 기록이 '이미 완료됨' 상태로 존재
+        lectureProgressRepository.save(createLectureProgress(enrollment, lecture));
 
-         // when
-         lectureProgressService.markLectureAsComplete(student.getId(), lecture.getId());
+        // when
+        lectureProgressService.markLectureAsComplete(student.getId(), lecture.getId());
 
-         // then
-         List<LectureProgress> progresses = lectureProgressRepository.findAll();
-         assertThat(progresses).hasSize(1)
-                 .extracting("enrollment.id", "lecture.id", "completed")
-                 .containsExactly(
-                         tuple(enrollment.getId(), lecture.getId(), true)
-                 );
-     }
+        // then
+        List<LectureProgress> progresses = lectureProgressRepository.findAll();
+        assertThat(progresses)
+                .hasSize(1)
+                .extracting("enrollment.id", "lecture.id", "completed")
+                .containsExactly(tuple(enrollment.getId(), lecture.getId(), true));
+    }
 
-     @DisplayName("이미 완료한 강의를 다시 완료 요청해도 이벤트가 발생하지 않는다 (멱등성).")
-     @Test
-     void markLectureAsComplete_idempotent() {
-         // given
-         User instructor = userRepository.save(createUser("instructor@test.com"));
-         User student = userRepository.save(createUser("student@test.com"));
-         Course course = createAndSaveCourse(instructor);
-         Section section = sectionRepository.save(createSection(course, "S1", 1));
-         Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
-         Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
+    @DisplayName("이미 완료한 강의를 다시 완료 요청해도 이벤트가 발생하지 않는다 (멱등성).")
+    @Test
+    void markLectureAsComplete_idempotent() {
+        // given
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Course course = createAndSaveCourse(instructor);
+        Section section = sectionRepository.save(createSection(course, "S1", 1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course));
 
-         // 1. 수강 기록이 '이미 완료됨' 상태로 존재
-         LectureProgress lectureProgress = createLectureProgress(enrollment, lecture);
-         lectureProgress.complete();
-         lectureProgressRepository.save(lectureProgress);
+        // 1. 수강 기록이 '이미 완료됨' 상태로 존재
+        LectureProgress lectureProgress = createLectureProgress(enrollment, lecture);
+        lectureProgress.complete();
+        lectureProgressRepository.save(lectureProgress);
 
-         // when
-         lectureProgressService.markLectureAsComplete(student.getId(), lecture.getId());
+        // when
+        lectureProgressService.markLectureAsComplete(student.getId(), lecture.getId());
 
-         // then
-         List<LectureProgress> progresses = lectureProgressRepository.findAll();
-         assertThat(progresses).hasSize(1)
-                 .extracting("enrollment.id", "lecture.id", "completed")
-                 .containsExactly(
-                         tuple(enrollment.getId(), lecture.getId(), true)
-                 );
-     }
+        // then
+        List<LectureProgress> progresses = lectureProgressRepository.findAll();
+        assertThat(progresses)
+                .hasSize(1)
+                .extracting("enrollment.id", "lecture.id", "completed")
+                .containsExactly(tuple(enrollment.getId(), lecture.getId(), true));
+    }
 
     @DisplayName("강의 완료 처리 시 수강 기록(Progress)이 없으면 예외가 발생한다.")
     @Test
@@ -220,10 +208,10 @@
         User student = userRepository.save(createUser("student@test.com"));
         Course course = createAndSaveCourse(instructor);
         Section section = sectionRepository.save(createSection(course, "S1", 1));
-        Lecture lecture = lectureRepository.save(createLecture(section, "L1",1));
+        Lecture lecture = lectureRepository.save(createLecture(section, "L1", 1));
         enrollmentRepository.save(createEnrollment(student, course));
 
-         // when // then
+        // when // then
         assertThatThrownBy(
                         () ->
                                 lectureProgressService.markLectureAsComplete(
@@ -280,9 +268,8 @@
     }
 
     // LectureProgress
-    private LectureProgress createLectureProgress(
-            Enrollment enrollment, Lecture lecture) {
+    private LectureProgress createLectureProgress(Enrollment enrollment, Lecture lecture) {
 
         return LectureProgress.create(enrollment, lecture);
     }
- }
+}

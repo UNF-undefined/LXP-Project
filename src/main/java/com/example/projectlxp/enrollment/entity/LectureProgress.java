@@ -13,8 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import com.example.projectlxp.lecture.entity.Lecture;
 
 import lombok.AccessLevel;

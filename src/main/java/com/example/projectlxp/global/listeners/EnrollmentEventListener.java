@@ -48,7 +48,6 @@ public class EnrollmentEventListener {
         long completedCount =
                 lectureProgressRepository.countByEnrollmentAndCompleted(enrollment, true);
 
-
         enrollment.updateCompletedLectureCount((int) completedCount);
         enrollmentRepository.save(enrollment);
     }
