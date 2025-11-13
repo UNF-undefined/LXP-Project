@@ -2,15 +2,18 @@ package com.example.projectlxp.enrollment.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.projectlxp.IntegrationTestSupport;
 import com.example.projectlxp.category.entity.Category;
@@ -21,24 +24,39 @@ import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
 import com.example.projectlxp.enrollment.dto.response.CreateEnrollmentResponseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
+import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.entity.Enrollment;
+import com.example.projectlxp.enrollment.entity.LectureProgress;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
+import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.entity.Lecture;
+import com.example.projectlxp.lecture.entity.LectureType;
+import com.example.projectlxp.lecture.repository.LectureRepository;
+import com.example.projectlxp.section.entity.Section;
+import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.user.entity.Role;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
+@Transactional
 class EnrollmentServiceImplTest extends IntegrationTestSupport {
     @Autowired private EnrollmentService enrollmentService;
     @Autowired private EnrollmentRepository enrollmentRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private CourseRepository courseRepository;
     @Autowired private CategoryRepository categoryRepository;
+    @Autowired private SectionRepository sectionRepository;
+    @Autowired private LectureRepository lectureRepository;
+    @Autowired private LectureProgressRepository lectureProgressRepository;
 
     @AfterEach
     void tearDown() {
+        lectureProgressRepository.deleteAllInBatch();
         enrollmentRepository.deleteAllInBatch();
+        lectureRepository.deleteAllInBatch();
+        sectionRepository.deleteAllInBatch();
         courseRepository.deleteAllInBatch();
         categoryRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
@@ -140,6 +158,190 @@ class EnrollmentServiceImplTest extends IntegrationTestSupport {
 
         assertThat(enrollmentIds)
                 .containsExactlyInAnyOrder(enrollment1.getId(), enrollment3.getId());
+    }
+
+    @DisplayName("수강중인 강좌의 상세 정보를 조회한다.")
+    @Test
+    void getMyEnrolledCourseDetail_Success() {
+        // given
+        // 1. 강사, 학생, 카테고리, 강좌 생성
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User student = userRepository.save(createUser("student@test.com"));
+        Category category = categoryRepository.save(createCategory());
+        Course course = courseRepository.save(createCourse(instructor, category));
+
+        // 2. 섹션 2개 생성 (순서: 1, 2)
+        Section section1 = sectionRepository.save(createSection(course, "Section 1", 1));
+        Section section2 = sectionRepository.save(createSection(course, "Section 2", 2));
+
+        // 3. 강의 4개 생성
+        Lecture lecture1 = lectureRepository.save(createLecture(section1, "Lecture 1-1", 1));
+        Lecture lecture2 = lectureRepository.save(createLecture(section1, "Lecture 1-2", 2));
+        Lecture lecture3 = lectureRepository.save(createLecture(section2, "Lecture 2-1", 1));
+        Lecture lecture4 = lectureRepository.save(createLecture(section2, "Lecture 2-2", 2));
+
+        // 4. 수강 신청 (총 강의 수 4개)
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course, false));
+
+        // 5. 강의 진행도 설정 (4개 중 2개 완료)
+        lectureProgressRepository.save(createLectureProgress(enrollment, lecture1, true));
+        lectureProgressRepository.save(createLectureProgress(enrollment, lecture2, true));
+        lectureProgressRepository.save(createLectureProgress(enrollment, lecture3, false));
+        lectureProgressRepository.save(createLectureProgress(enrollment, lecture4, false));
+
+        // when
+        EnrolledCourseDetailDTO result =
+                enrollmentService.getMyEnrolledCourseDetail(student.getId(), enrollment.getId());
+
+        // then
+        assertThat(result)
+                .isNotNull()
+                .extracting(
+                        EnrolledCourseDetailDTO::getEnrollmentId,
+                        EnrolledCourseDetailDTO::getCourseId,
+                        EnrolledCourseDetailDTO::getCourseTitle,
+                        EnrolledCourseDetailDTO::getInstructorName,
+                        EnrolledCourseDetailDTO::getCompletionRate)
+                .containsExactly(
+                        enrollment.getId(),
+                        course.getId(),
+                        course.getTitle(),
+                        instructor.getName(),
+                        50.0);
+
+        assertThat(result.getSections())
+                .hasSize(2)
+                .satisfiesExactly(
+                        sectionDTO ->
+                                assertAll(
+                                        () ->
+                                                assertThat(sectionDTO.getSectionTitle())
+                                                        .isEqualTo("Section 1"),
+                                        () -> assertThat(sectionDTO.getLectures()).hasSize(2),
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(sectionDTO.getLectures().get(0).getTitle())
+                                                    .isEqualTo("Lecture 1-1");
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(
+                                                            sectionDTO
+                                                                    .getLectures()
+                                                                    .get(0)
+                                                                    .isCompleted())
+                                                    .isTrue();
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(sectionDTO.getLectures().get(1).getTitle())
+                                                    .isEqualTo("Lecture 1-2");
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(
+                                                            sectionDTO
+                                                                    .getLectures()
+                                                                    .get(1)
+                                                                    .isCompleted())
+                                                    .isTrue();
+                                        }),
+                        sectionDTO ->
+                                assertAll(
+                                        () ->
+                                                assertThat(sectionDTO.getSectionTitle())
+                                                        .isEqualTo("Section 2"),
+                                        () -> assertThat(sectionDTO.getLectures()).hasSize(2),
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(sectionDTO.getLectures().get(0).getTitle())
+                                                    .isEqualTo("Lecture 2-1");
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(
+                                                            sectionDTO
+                                                                    .getLectures()
+                                                                    .get(0)
+                                                                    .isCompleted())
+                                                    .isFalse();
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(sectionDTO.getLectures().get(1).getTitle())
+                                                    .isEqualTo("Lecture 2-2");
+                                        },
+                                        () -> {
+                                            Assertions.assertNotNull(sectionDTO.getLectures());
+                                            assertThat(
+                                                            sectionDTO
+                                                                    .getLectures()
+                                                                    .get(1)
+                                                                    .isCompleted())
+                                                    .isFalse();
+                                        }));
+    }
+
+    // 👇 [신규 테스트 케이스] 수강 강좌 상세 조회 (실패 - 권한 없음)
+    @DisplayName("다른 사람의 수강 강좌 상세 정보를 조회하면 예외가 발생한다.")
+    @Test
+    void getMyEnrolledCourseDetail_throwsException_whenNotOwner() {
+        // given
+        // 1. 강사, 학생1(수강 주인), 학생2(조회 시도자)
+        User instructor = userRepository.save(createUser("instructor@test.com"));
+        User studentOwner = userRepository.save(createUser("student1@test.com"));
+        User studentAttacker = userRepository.save(createUser("student2@test.com"));
+
+        Category category = categoryRepository.save(createCategory());
+        Course course = courseRepository.save(createCourse(instructor, category));
+
+        // 2. 수강 신청 (studentOwner가 신청)
+        Enrollment enrollment =
+                enrollmentRepository.save(createEnrollment(studentOwner, course, false));
+
+        // when & then
+        // studentAttacker가 studentOwner의 수강 정보를 조회 시도
+        assertThatThrownBy(
+                        () ->
+                                enrollmentService.getMyEnrolledCourseDetail(
+                                        studentAttacker.getId(), enrollment.getId()))
+                .isInstanceOf(CustomBusinessException.class)
+                .hasMessage("수강신청 정보를 찾을 수 없거나 권한이 없습니다. ID: " + enrollment.getId());
+    }
+
+    // 👇 [신규 테스트 케이스] 수강 강좌 상세 조회 (실패 - 회원 없음)
+    @DisplayName("존재하지 않는 회원ID로 수강 강좌 상세 조회를 시도하면 예외가 발생한다.")
+    @Test
+    void getMyEnrolledCourseDetail_throwsException_whenUserNotFound() {
+        // given
+        Long nonExistentUserId = 9999L;
+        Long anyEnrollmentId = 1L;
+
+        // when & then
+        assertThatThrownBy(
+                        () ->
+                                enrollmentService.getMyEnrolledCourseDetail(
+                                        nonExistentUserId, anyEnrollmentId))
+                .isInstanceOf(CustomBusinessException.class)
+                .hasMessage("존재하지 않는 회원입니다. ID: " + nonExistentUserId);
+    }
+
+    private Section createSection(Course course, String title, int orderNo) {
+        return Section.createSection(course, title, orderNo);
+    }
+
+    private Lecture createLecture(Section section, String title, int orderNo) {
+        return Lecture.createLecture(
+                title, LectureType.VIDEO, orderNo, "http://file.url", section, "10:00");
+    }
+
+    private LectureProgress createLectureProgress(
+            Enrollment enrollment, Lecture lecture, boolean completed) {
+        return LectureProgress.builder()
+                .enrollment(enrollment)
+                .lecture(lecture)
+                .completed(completed)
+                .build();
     }
 
     @DisplayName("숨김 처리된 수강중인 강좌를 다시 보이게 처리한다.")

@@ -13,15 +13,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import com.example.projectlxp.lecture.entity.Lecture;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
@@ -38,8 +40,8 @@ public class LectureProgress {
     private Long id;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private boolean completed;
+    @Builder.Default
+    private boolean completed = false;
 
     @Column(name = "last_accessed_at")
     private LocalDateTime lastAccessedAt;
@@ -51,4 +53,22 @@ public class LectureProgress {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id", nullable = false)
     private Lecture lecture;
+
+    public static LectureProgress create(Enrollment enrollment, Lecture lecture) {
+        return LectureProgress.builder()
+                .enrollment(enrollment)
+                .lecture(lecture)
+                .completed(false)
+                .lastAccessedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public void updateLastAccessedAt() {
+        this.lastAccessedAt = LocalDateTime.now();
+    }
+
+    public void complete() {
+        this.completed = true;
+        this.lastAccessedAt = LocalDateTime.now();
+    }
 }

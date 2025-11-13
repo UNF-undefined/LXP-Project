@@ -106,6 +106,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+clean {
+    delete file(querydslSrcDir)
+}
+
 spotless {
     java {
         googleJavaFormat().aosp()
