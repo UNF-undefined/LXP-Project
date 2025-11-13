@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -80,6 +81,9 @@ public class SecurityConfig {
                                 authorize
                                         .requestMatchers("/join", "/login", "/logout")
                                         .permitAll() // 회원가입 로그인은 누구나
+                                        .requestMatchers(
+                                                HttpMethod.GET, "/categories", "/courses/**")
+                                        .permitAll()
                                         .requestMatchers("/me", "/update")
                                         .authenticated() // 정보조회,수정은 인증필요
                                         .anyRequest()

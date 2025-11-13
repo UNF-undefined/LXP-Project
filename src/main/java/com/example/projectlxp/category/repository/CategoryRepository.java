@@ -12,7 +12,7 @@ import com.example.projectlxp.category.entity.Category;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    @Query("SELECT c FROM Category c JOIN FETCH c.children WHERE c.parent IS NULL")
+    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.parent IS NULL")
     List<Category> findAllCategoryOptimize();
 
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.parent WHERE c.id = :categoryId")

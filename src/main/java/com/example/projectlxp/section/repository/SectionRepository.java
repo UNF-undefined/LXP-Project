@@ -46,7 +46,7 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     @Query(
             """
     SELECT s FROM Section s
-    JOIN FETCH s.lectures l
+    LEFT JOIN FETCH s.lectures l
     WHERE s.course.id = :courseId
     ORDER BY s.orderNo ASC, l.orderNo ASC
     """)
