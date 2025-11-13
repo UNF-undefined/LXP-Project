@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
+import com.example.projectlxp.lecture.controller.dto.LectureCreateDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
@@ -33,19 +34,21 @@ public class LectureController {
         this.lectureService = lectureService;
     }
 
-    // TODO : Service layer에 넘길 때, DTO로 넘기는 것이 더 직관적일 수 있다 !
     @PostMapping
     public BaseResponse<LectureCreateResponseDTO> createLecture(
-            @ModelAttribute LectureCreateRequestDTO request,
-            @RequestParam(name = "userId", defaultValue = "1") Long userId)
+            @ModelAttribute LectureCreateRequestDTO request, @CurrentUserId Long userId)
             throws Exception {
-        LectureCreateResponseDTO response =
-                lectureService.registerLecture(
+
+        // convert to DTO
+        LectureCreateDTO lectureCreate =
+                new LectureCreateDTO(
                         userId,
                         request.sectionId(),
                         request.title(),
                         request.orderNo(),
                         request.file());
+
+        LectureCreateResponseDTO response = lectureService.registerLecture(lectureCreate);
         return BaseResponse.success(response);
     }
 
@@ -53,11 +56,11 @@ public class LectureController {
     public BaseResponse<LectureUpdateResponseDTO> updateLecture(
             @PathVariable(name = "lectureId") Long lectureId,
             @RequestBody LectureUpdateRequestDTO request,
-            @RequestParam(name = "userId", defaultValue = "1") Long userId) {
+            @CurrentUserId Long userId) {
 
         // convert to LectureModifyDTO
         LectureModifyDTO modifyInfo =
-                new LectureModifyDTO(userId, lectureId, request.getTitle(), request.getOrderNo());
+                new LectureModifyDTO(userId, lectureId, request.title(), request.orderNo());
 
         LectureUpdateResponseDTO response = lectureService.modifyLecture(modifyInfo);
 
@@ -66,8 +69,7 @@ public class LectureController {
 
     @DeleteMapping("/{lectureId}")
     public BaseResponse<?> deleteLecture(
-            @PathVariable(name = "lectureId") Long lectureId,
-            @RequestParam(name = "userId", defaultValue = "1") Long userId) {
+            @PathVariable(name = "lectureId") Long lectureId, @CurrentUserId Long userId) {
         // convert to DTO
         LectureDeleteDTO deleteInfo = new LectureDeleteDTO(userId, lectureId);
         lectureService.removeLecture(deleteInfo);
@@ -76,8 +78,7 @@ public class LectureController {
 
     @GetMapping("/{lectureId}")
     public BaseResponse<LectureGetDetailResponseDTO> getLecture(
-            @PathVariable(name = "lectureId") Long lectureId,
-            @RequestParam(name = "userId", defaultValue = "1") Long userId) {
+            @PathVariable(name = "lectureId") Long lectureId, @CurrentUserId Long userId) {
 
         LectureDetailDTO lectureInfo = new LectureDetailDTO(userId, lectureId);
 

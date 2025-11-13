@@ -3,9 +3,11 @@ package com.example.projectlxp.enrollment.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import com.example.projectlxp.enrollment.entity.Enrollment;
 import com.example.projectlxp.enrollment.entity.LectureProgress;
 import com.example.projectlxp.enrollment.repository.EnrollmentRepository;
 import com.example.projectlxp.enrollment.repository.LectureProgressRepository;
+import com.example.projectlxp.enrollment.repository.projection.LectureCountProjection;
 import com.example.projectlxp.enrollment.service.validator.EnrollmentValidator;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.entity.Lecture;
@@ -91,7 +94,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         Enrollment enrollment = Enrollment.create(user, course, false);
-
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         return CreateEnrollmentResponseDTO.from(savedEnrollment);
     }
@@ -209,8 +211,45 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollmentRepository.findVisibleByUserIdWithCourse(
                         user.getId(), isHidden, pageable);
 
-        Page<EnrolledCourseDTO> enrolledCourseDTOPage = enrollmentPage.map(EnrolledCourseDTO::from);
+        Page<EnrolledCourseDTO> enrolledCourseDTOPage = createEnrolledCourseDTOPage(enrollmentPage);
         return PagedEnrolledCourseDTO.from(enrolledCourseDTOPage);
+    }
+
+    /**
+     * Enrollment 페이지를 받아, N+1 문제 없이 진도율을 계산하여 EnrolledCourseDTO 페이지로 변환합니다.
+     *
+     * @param enrollmentPage 원본 Enrollment 페이지
+     * @return 진도율이 계산된 DTO 페이지
+     */
+    private Page<EnrolledCourseDTO> createEnrolledCourseDTOPage(Page<Enrollment> enrollmentPage) {
+        List<Enrollment> enrollments = enrollmentPage.getContent();
+        if (enrollments.isEmpty()) {
+            return Page.empty();
+        }
+
+        Set<Long> courseIds =
+                enrollments.stream().map(e -> e.getCourse().getId()).collect(Collectors.toSet());
+
+        Map<Long, Long> totalLectureMap =
+                lectureRepository.findLectureCountsByCourseIds(courseIds).stream()
+                        .collect(
+                                Collectors.toMap(
+                                        LectureCountProjection::getCourseId,
+                                        LectureCountProjection::getLectureCount));
+
+        List<EnrolledCourseDTO> dtoList =
+                enrollments.stream()
+                        .map(
+                                enrollment -> {
+                                    Long total =
+                                            totalLectureMap.getOrDefault(
+                                                    enrollment.getCourse().getId(), 0L);
+                                    return EnrolledCourseDTO.of(enrollment, total);
+                                })
+                        .toList();
+
+        return new PageImpl<>(
+                dtoList, enrollmentPage.getPageable(), enrollmentPage.getTotalElements());
     }
 
     @Override

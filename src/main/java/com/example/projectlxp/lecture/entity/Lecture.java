@@ -25,11 +25,15 @@ import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.section.entity.Section;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
 @Table(name = "lectures")
 @SQLDelete(sql = "UPDATE lectures SET is_deleted = true WHERE id = ?")

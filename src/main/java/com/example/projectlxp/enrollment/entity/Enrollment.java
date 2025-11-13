@@ -17,8 +17,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.global.base.BaseEntity;
 import com.example.projectlxp.user.entity.User;
@@ -31,7 +29,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(
@@ -47,15 +45,14 @@ public class Enrollment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @ColumnDefault("0")
-    private int progress = 0;
-
-    @Column(name = "last_viewed_at")
-    private LocalDateTime lastViewedAt;
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int completedLectureCount;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(name = "last_viewed_at")
+    private LocalDateTime lastViewedAt;
 
     @Column(name = "is_hidden", nullable = false)
     private boolean isHidden = false;
@@ -79,7 +76,16 @@ public class Enrollment extends BaseEntity {
         isHidden = false;
     }
 
+    public void updateCompletedLectureCount(int completedLectureCount) {
+        this.completedLectureCount = completedLectureCount;
+    }
+
     public static Enrollment create(User user, Course course, boolean isHidden) {
-        return Enrollment.builder().user(user).course(course).isHidden(isHidden).build();
+        return Enrollment.builder()
+                .completedLectureCount(0)
+                .isHidden(isHidden)
+                .user(user)
+                .course(course)
+                .build();
     }
 }

@@ -81,10 +81,7 @@ class EnrollmentRepositoryTest extends IntegrationTestSupport {
                         .getContent();
 
         // then
-        assertThat(enrollments)
-                .hasSize(3)
-                .extracting("progress")
-                .containsExactlyInAnyOrder(0, 0, 0);
+        assertThat(enrollments).hasSize(3);
     }
 
     @DisplayName("유저가 수강중인 강좌가 없을 때 빈 페이지를 반환한다.")

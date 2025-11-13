@@ -98,6 +98,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
+                                        .requestMatchers(
+                                                "/v3/api-docs/**",
+                                                "/swagger-ui/**",
+                                                "/swagger-ui.html",
+                                                "/swagger-resources/**")
+                                        .permitAll()
                                         .requestMatchers("/join", "/login", "/logout")
                                         .permitAll() // 회원가입 로그인은 누구나
                                         .requestMatchers(
