@@ -1,6 +1,7 @@
 package com.example.projectlxp.lecture.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -55,4 +56,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
                     + " WHERE l.section.id = :sectionId AND l.orderNo > :orderNo")
     void decrementOrderAfterDelete(
             @Param("sectionId") Long sectionId, @Param("orderNo") int deletedOrderNo);
+
+    @Query(
+            "SELECT l FROM Lecture l "
+                    + "JOIN FETCH l.section s "
+                    + "JOIN FETCH s.course c "
+                    + "JOIN FETCH c.instructor i"
+                    + " WHERE l.id = :id")
+    Optional<Lecture> findDetailById(Long id);
 }
