@@ -2,6 +2,7 @@ package com.example.projectlxp.lecture.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
+import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.request.LectureCreateRequestDTO;
 import com.example.projectlxp.lecture.controller.dto.request.LectureUpdateRequestDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
+import com.example.projectlxp.lecture.controller.dto.response.LectureGetDetailResponseDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
 import com.example.projectlxp.lecture.service.LectureService;
 
@@ -69,5 +72,16 @@ public class LectureController {
         LectureDeleteDTO deleteInfo = new LectureDeleteDTO(userId, lectureId);
         lectureService.removeLecture(deleteInfo);
         return BaseResponse.success("Deleted Lecture");
+    }
+
+    @GetMapping("/{lectureId}")
+    public BaseResponse<LectureGetDetailResponseDTO> getLecture(
+            @PathVariable(name = "lectureId") Long lectureId,
+            @RequestParam(name = "userId", defaultValue = "1") Long userId) {
+
+        LectureDetailDTO lectureInfo = new LectureDetailDTO(userId, lectureId);
+
+        LectureGetDetailResponseDTO response = lectureService.getLectureDetail(lectureInfo);
+        return BaseResponse.success(response);
     }
 }
