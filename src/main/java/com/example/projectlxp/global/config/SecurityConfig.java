@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,6 +21,7 @@ import com.example.projectlxp.global.jwt.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
+@EnableMethodSecurity
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -75,12 +77,28 @@ public class SecurityConfig {
                                                             .write(
                                                                     "{\"error\" : \"권한이 없습니다.\", \"status\": 403}");
                                                 }))
+
+                // 로그아웃 설정
+                .logout(
+                        logout ->
+                                logout.logoutUrl("/logout")
+                                        .logoutSuccessHandler(
+                                                (request, response, authentication) -> {
+                                                    response.setStatus(HttpServletResponse.SC_OK);
+                                                    response.setContentType(
+                                                            MediaType.APPLICATION_JSON_VALUE);
+                                                    response.setCharacterEncoding("UTF-8");
+                                                    response.getWriter()
+                                                            .write(
+                                                                    "{\"message\": \"로그아웃에 성공했습니다.\", \"status\": 200}");
+                                                })
+                                        .permitAll())
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
                                         .requestMatchers("/join", "/login", "/logout")
                                         .permitAll() // 회원가입 로그인은 누구나
-                                        .requestMatchers("/me", "/update")
+                                        .requestMatchers("/me", "/update", "/withdraw")
                                         .authenticated() // 정보조회,수정은 인증필요
                                         .anyRequest()
                                         .authenticated() // 그 외 모든 요청은 인증 필요

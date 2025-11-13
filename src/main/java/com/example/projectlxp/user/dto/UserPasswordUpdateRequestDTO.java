@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+// @PasswordMatches(message = "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.")
 public class UserPasswordUpdateRequestDTO {
 
     @NotBlank(message = "현재 비밀번호를 입력해주세요. ")

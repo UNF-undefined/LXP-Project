@@ -23,4 +23,7 @@ public interface UserService {
 
     // 정보수정 (패스워드)
     void updatePassword(Long userId, UserPasswordUpdateRequestDTO requestDTO);
+
+    // 회원탈퇴
+    void withdraw(Long userId);
 }

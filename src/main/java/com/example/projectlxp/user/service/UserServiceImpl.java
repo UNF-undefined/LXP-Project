@@ -1,5 +1,7 @@
 package com.example.projectlxp.user.service;
 
+import java.util.Optional;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -29,14 +32,28 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
+    //    private final CourseRepository courseRepository;
+
     // 회원가입
     @Override
     @Transactional // DB에 데이터를 저장
     public void join(UserJoinRequestDTO requestDTO) {
-        // 이메일 중복 체크
-        if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+
+        Optional<User> existingUserOptional =
+                userRepository.findFirstByEmailOrderByCreatedAtDescIgnoreRestriction(
+                        requestDTO.getEmail());
+
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+
+            if (existingUser.isDeleted()) {
+                throw new IllegalStateException("이미 탈퇴 처리된 이메일입니다. 재가입이 불가합니다.");
+            } else {
+                throw new IllegalStateException("이미 가입된 이메일입니다.");
+            }
         }
+
+        // 재가입 이력이 없다면 저장
         User newUser = requestDTO.toEntity(passwordEncoder);
         userRepository.save(newUser);
     }
@@ -108,5 +125,25 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
         user.updatePassword(passwordEncoder.encode(requestDTO.getNewPassword()));
+    }
+
+    // 회원탈퇴
+    @Override
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = getUser(userId);
+
+        //        // 강사탈퇴 로직
+        //        if (user.getRole() == Role.INSTRUCTOR) {
+        //
+        //            List<Course> courses = courseRepository.findAllByInstructorId(userId);
+        //
+        //            for (Course course : courses) {
+        //                course.setInstructor(null);
+        //            }
+        //            // 강의(Course) 엔티티의 instructor 필드는 '알 수 없음' 유저를 가리키게 됨
+        //        }
+        // Soft Delete
+        userRepository.delete(user);
     }
 }

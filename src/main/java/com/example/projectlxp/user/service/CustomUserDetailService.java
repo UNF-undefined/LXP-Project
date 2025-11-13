@@ -25,20 +25,36 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 
-        User user =
-                userRepository
-                        .findByEmail(email)
-                        .orElseThrow(
-                                () ->
-                                        new UsernameNotFoundException(
-                                                "인증된 이메일을 찾을 수 없습니다. email : " + email));
+        User userEntity;
+
+        try {
+            Long userId = Long.parseLong(identifier);
+
+            userEntity =
+                    userRepository
+                            .findById(userId)
+                            .orElseThrow(
+                                    () ->
+                                            new UsernameNotFoundException(
+                                                    "해당 ID의 사용자를 찾을 수 없습니다." + identifier));
+
+        } catch (NumberFormatException e) {
+            // 숫자로 변환이 안되면 (로그인 시의 이메일이나 사용자명을 가정) 이메일/이름으로 조회
+            userEntity =
+                    userRepository
+                            .findByEmail(identifier)
+                            .orElseThrow(
+                                    () ->
+                                            new UsernameNotFoundException(
+                                                    "해당 이메일의 사용자를 찾을 수 없습니다." + identifier));
+        }
 
         return new CustomUserDetails(
-                user.getId(),
-                user.getEmail(),
-                user.getHashedPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())));
+                userEntity.getId(),
+                userEntity.getEmail(),
+                userEntity.getHashedPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority(userEntity.getRole().name())));
     }
 }
