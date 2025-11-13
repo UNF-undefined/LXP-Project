@@ -37,30 +37,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(
             Long courseId, Pageable pageable) {
-        Course course =
-                courseRepository
-                        .findById(courseId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 강좌를 찾을 수 없습니다. id=" + courseId));
+        Course course = this.getCourseOrThrow(courseId);
 
         Page<Review> reviewPage = reviewRepository.findByCourse(course, pageable);
-        Page<ReviewResponseDTO> dtoPage =
-                reviewPage.map(
-                        review -> {
-                            String username =
-                                    (review.getUser() == null || review.getUser().isDeleted())
-                                            ? "알 수 없음"
-                                            : review.getUser().getName();
-                            return ReviewResponseDTO.builder()
-                                    .reviewId(review.getId())
-                                    .content(review.getContent())
-                                    .rating(review.getRating())
-                                    .username(username)
-                                    .createdAt(review.getCreatedAt())
-                                    .build();
-                        });
+        Page<ReviewResponseDTO> dtoPage = reviewPage.map(ReviewResponseDTO::of);
+
         PageDTO pageInfo = PageDTO.of(dtoPage);
         return PageResponse.success(dtoPage.getContent(), pageInfo);
     }
@@ -70,31 +51,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewResponseDTO createReview(Long courseId, ReviewRequestDTO requestDTO, Long userId) {
 
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
+        User user = this.getUserOrThrow(userId);
+        Course course = this.getCourseOrThrow(courseId);
 
-        Course course =
-                courseRepository
-                        .findById(courseId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 강좌를 찾을 수 없습니다. id=" + courseId));
-
-        boolean isEnrolled = enrollmentRepository.existsByUserAndCourse(user, course);
-        if (!isEnrolled) {
-            throw new CustomBusinessException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
-        }
-
-        boolean hasReviewed = reviewRepository.existsByUserAndCourse(user, course);
-        if (hasReviewed) {
-            throw new CustomBusinessException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
-        }
+        this.validateReviewCreation(user, course);
 
         String cleanContent = profanityFilter.filter(requestDTO.getContent());
 
@@ -108,38 +68,35 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review savedReview = reviewRepository.save(newReview);
 
-        return ReviewResponseDTO.builder()
-                .reviewId(savedReview.getId())
-                .content(cleanContent)
-                .rating(savedReview.getRating())
-                .username(user.getName())
-                .createdAt(savedReview.getCreatedAt())
-                .build();
+        return ReviewResponseDTO.of(savedReview, user.getName());
     }
 
     @Transactional
     @Override
     public void deleteReview(Long reviewId, Long userId) {
 
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
-
-        Review review =
-                reviewRepository
-                        .findById(reviewId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+        User user = this.getUserOrThrow(userId);
+        Review review = this.getReviewOrThrow(reviewId);
 
         this.checkReviewOwner(review, user);
 
         reviewRepository.delete(review);
+    }
+
+    @Transactional
+    @Override
+    public ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO requestDTO, Long userId) {
+
+        User user = this.getUserOrThrow(userId);
+        Review review = this.getReviewOrThrow(reviewId);
+
+        this.checkReviewOwner(review, user);
+
+        String cleanContent = profanityFilter.filter(requestDTO.getContent());
+
+        review.updateReview(cleanContent, requestDTO.getRating());
+
+        return ReviewResponseDTO.of(review, user.getName());
     }
 
     private void checkReviewOwner(Review review, User user) {
@@ -150,38 +107,33 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
-    @Transactional
-    @Override
-    public ReviewResponseDTO updateReview(Long reviewId, ReviewRequestDTO requestDTO, Long userId) {
+    private Course getCourseOrThrow(Long courseId) {
+        return courseRepository
+                .findById(courseId)
+                .orElseThrow(() -> new CustomBusinessException("해당 강좌를 찾을 수 없습니다. id=" + courseId));
+    }
 
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 유저를 찾을 수 없습니다. id=" + userId));
+    private User getUserOrThrow(Long userId) {
+        return userRepository
+                .findById(userId)
+                .orElseThrow(() -> new CustomBusinessException("해당 유저를 찾을 수 없습니다. id=" + userId));
+    }
 
-        Review review =
-                reviewRepository
-                        .findById(reviewId)
-                        .orElseThrow(
-                                () ->
-                                        new CustomBusinessException(
-                                                "해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+    private Review getReviewOrThrow(Long reviewId) {
+        return reviewRepository
+                .findById(reviewId)
+                .orElseThrow(() -> new CustomBusinessException("해당 리뷰를 찾을 수 없습니다. id=" + reviewId));
+    }
 
-        this.checkReviewOwner(review, user);
+    private void validateReviewCreation(User user, Course course) {
+        // 검증 1 (수강생 자격)
+        if (!enrollmentRepository.existsByUserAndCourse(user, course)) {
+            throw new CustomBusinessException("이 강좌를 수강한 학생만 리뷰를 작성할 수 있습니다.");
+        }
 
-        String cleanContent = profanityFilter.filter(requestDTO.getContent());
-
-        review.updateReview(cleanContent, requestDTO.getRating());
-
-        return ReviewResponseDTO.builder()
-                .reviewId(review.getId())
-                .content(cleanContent)
-                .rating(review.getRating())
-                .username(user.getName())
-                .createdAt(review.getCreatedAt())
-                .build();
+        // 검증 2 (중복 작성)
+        if (reviewRepository.existsByUserAndCourse(user, course)) {
+            throw new CustomBusinessException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
+        }
     }
 }
