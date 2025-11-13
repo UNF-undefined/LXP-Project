@@ -28,15 +28,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
                     + "ORDER BY s.orderNo, l.orderNo")
     List<Lecture> findLecturesByCourse(@Param("course") Course course);
 
-    @Query(
-            "SELECT s.course.id AS courseId, COUNT(l.id) AS lectureCount "
-                    + "FROM Lecture l "
-                    + "JOIN l.section s "
-                    + "WHERE s.course.id IN :courseIds "
-                    + "GROUP BY s.course.id")
-    List<LectureCountProjection> findLectureCountsByCourseIds(
-            @Param("courseIds") Set<Long> courseIds);
-
     /** orderNo를 올릴 때 사용합니다. */
     @Modifying
     @Query(
@@ -60,6 +51,18 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             @Param("sectionId") Long sectionId,
             @Param("oldOrderNo") int oldOrderNo,
             @Param("newOrderNo") int newOrderNo);
+
+    @Query("SELECT COUNT(l) FROM Lecture l JOIN l.section s WHERE s.course = :course")
+    long countByCourse(@Param("course") Course course);
+
+    @Query(
+            "SELECT s.course.id AS courseId, COUNT(l.id) AS lectureCount "
+                    + "FROM Lecture l "
+                    + "JOIN l.section s "
+                    + "WHERE s.course.id IN :courseIds "
+                    + "GROUP BY s.course.id")
+    List<LectureCountProjection> findLectureCountsByCourseIds(
+            @Param("courseIds") Set<Long> courseIds);
 
     @Modifying
     @Query(

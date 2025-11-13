@@ -20,18 +20,6 @@ public class EnrolledCourseDTO {
     private double completionRate;
     private boolean isHidden;
 
-    public static EnrolledCourseDTO of(Enrollment enrollment, double completionRate) {
-        Course course = enrollment.getCourse();
-        return EnrolledCourseDTO.builder()
-                .enrollmentId(enrollment.getId())
-                .courseId(course.getId())
-                .courseTitle(course.getTitle())
-                .thumbnail(course.getThumbnail())
-                .completionRate(completionRate)
-                .isHidden(enrollment.isHidden())
-                .build();
-    }
-
     public static EnrolledCourseDTO from(Enrollment enrollment) {
         Course course = enrollment.getCourse();
         return EnrolledCourseDTO.builder()
@@ -39,6 +27,23 @@ public class EnrolledCourseDTO {
                 .courseId(course.getId())
                 .courseTitle(course.getTitle())
                 .thumbnail(course.getThumbnail())
+                .isHidden(enrollment.isHidden())
+                .build();
+    }
+
+    public static EnrolledCourseDTO of(Enrollment enrollment, Long totalLectureCount) {
+        double completionRate = 0.0;
+        if (totalLectureCount > 0) {
+            completionRate =
+                    (double) enrollment.getCompletedLectureCount() / totalLectureCount * 100.0;
+        }
+
+        return EnrolledCourseDTO.builder()
+                .enrollmentId(enrollment.getId())
+                .courseId(enrollment.getCourse().getId())
+                .courseTitle(enrollment.getCourse().getTitle())
+                .thumbnail(enrollment.getCourse().getThumbnail())
+                .completionRate(completionRate)
                 .isHidden(enrollment.isHidden())
                 .build();
     }

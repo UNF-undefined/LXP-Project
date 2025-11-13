@@ -30,4 +30,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
                     + "WHERE e.id = :enrollmentId AND u.id = :userId")
     Optional<Enrollment> findDetailByIdAndUserId(
             @Param("enrollmentId") Long enrollmentId, @Param("userId") Long userId);
+
+    Optional<Enrollment> findByUserIdAndCourseId(Long userId, Long courseId);
 }

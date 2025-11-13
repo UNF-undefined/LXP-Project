@@ -83,7 +83,7 @@ class EnrollmentValidatorTest extends IntegrationTestSupport {
     }
 
     private Enrollment createEnrollment(User user, Course course, boolean isHidden) {
-        return Enrollment.create(user, course, 1L, isHidden);
+        return Enrollment.create(user, course, isHidden);
     }
 
     private Enrollment createEnrollment(User user, Course course) {

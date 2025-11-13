@@ -167,6 +167,6 @@ class EnrollmentRepositoryTest extends IntegrationTestSupport {
     }
 
     private Enrollment createEnrollment(User user, Course course) {
-        return Enrollment.create(user, course, 10L, false);
+        return Enrollment.create(user, course, false);
     }
 }

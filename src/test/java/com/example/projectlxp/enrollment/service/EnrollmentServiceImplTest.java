@@ -181,8 +181,7 @@ class EnrollmentServiceImplTest extends IntegrationTestSupport {
         Lecture lecture4 = lectureRepository.save(createLecture(section2, "Lecture 2-2", 2));
 
         // 4. 수강 신청 (총 강의 수 4개)
-        Enrollment enrollment =
-                enrollmentRepository.save(createEnrollment(student, course, 4L, false));
+        Enrollment enrollment = enrollmentRepository.save(createEnrollment(student, course, false));
 
         // 5. 강의 진행도 설정 (4개 중 2개 완료)
         lectureProgressRepository.save(createLectureProgress(enrollment, lecture1, true));
@@ -298,7 +297,7 @@ class EnrollmentServiceImplTest extends IntegrationTestSupport {
 
         // 2. 수강 신청 (studentOwner가 신청)
         Enrollment enrollment =
-                enrollmentRepository.save(createEnrollment(studentOwner, course, 0L, false));
+                enrollmentRepository.save(createEnrollment(studentOwner, course, false));
 
         // when & then
         // studentAttacker가 studentOwner의 수강 정보를 조회 시도
@@ -325,12 +324,6 @@ class EnrollmentServiceImplTest extends IntegrationTestSupport {
                                         nonExistentUserId, anyEnrollmentId))
                 .isInstanceOf(CustomBusinessException.class)
                 .hasMessage("존재하지 않는 회원입니다. ID: " + nonExistentUserId);
-    }
-
-    private Enrollment createEnrollment(
-            User user, Course course, long totalLectureCount, boolean isHidden) {
-        // Enrollment 엔티티의 create 팩토리 메서드 사용
-        return Enrollment.create(user, course, totalLectureCount, isHidden);
     }
 
     private Section createSection(Course course, String title, int orderNo) {
@@ -494,7 +487,7 @@ class EnrollmentServiceImplTest extends IntegrationTestSupport {
     }
 
     private Enrollment createEnrollment(User user, Course course, boolean isHidden) {
-        return Enrollment.create(user, course, 1L, isHidden);
+        return Enrollment.create(user, course, isHidden);
     }
 
     private Enrollment createEnrollment(User user, Course course) {

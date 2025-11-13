@@ -18,10 +18,14 @@ import org.hibernate.annotations.ColumnDefault;
 import com.example.projectlxp.lecture.entity.Lecture;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
@@ -51,4 +55,22 @@ public class LectureProgress {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id", nullable = false)
     private Lecture lecture;
+
+    public static LectureProgress create(Enrollment enrollment, Lecture lecture) {
+        return LectureProgress.builder()
+                .enrollment(enrollment)
+                .lecture(lecture)
+                .completed(false)
+                .lastAccessedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public void updateLastAccessedAt() {
+        this.lastAccessedAt = LocalDateTime.now();
+    }
+
+    public void complete() {
+        this.completed = true;
+        this.lastAccessedAt = LocalDateTime.now();
+    }
 }
