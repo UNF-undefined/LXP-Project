@@ -3,6 +3,7 @@ package com.example.projectlxp.global.jwt;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -12,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.example.projectlxp.user.dto.CustomUserDetails;
@@ -30,19 +32,22 @@ public class JwtTokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String USER_ID_KEY = "userId";
+    private final UserDetailsService userDetailsService;
 
     // applcation-locla.yml 에서 설정 값 가져오기
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-expiration-ms}") long accessTokenExpirationMs,
             // Refresh token 만료 시간 주입
-            @Value("${jwt.refresh-token-expiration-ms}") long freshTokenExpirationMs) {
+            @Value("${jwt.refresh-token-expiration-ms}") long freshTokenExpirationMs,
+            UserDetailsService UserDetailsService) {
 
         // yml의 secret 문자열을 SecretKry 객체로 변환
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         // 필드 값 할당
         this.refreshTokenExpirationMs = freshTokenExpirationMs;
+        this.userDetailsService = UserDetailsService;
     }
 
     // 토큰 생성 메서드 (로그인 성공 시 호출됨)
@@ -92,14 +97,29 @@ public class JwtTokenProvider {
         Claims claims =
                 Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+        // AUTHORITIES_KEY 권한정보 Null 체크 및 안전한 처리
 
+        Object authoritiesObject = claims.get(AUTHORITIES_KEY);
+
+        Collection<? extends GrantedAuthority> authorities;
+
+        if (authoritiesObject == null) {
+            // 널일 경우 : 권한이 없음을 나타내는 빈 목록 사용
+            authorities = List.of();
+        } else {
+            // 널이 아닐 경우 : 안전하게 String으로 변환 후 처리
+            authorities =
+                    Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
+        }
         Long userId = claims.get(USER_ID_KEY, Long.class);
 
-        return new UsernamePasswordAuthenticationToken(userId, null, authorities);
+        CustomUserDetails userDetails =
+                (CustomUserDetails) userDetailsService.loadUserByUsername(String.valueOf(userId));
+
+        return new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
     }
 
     // 토큰 검증 메서드
