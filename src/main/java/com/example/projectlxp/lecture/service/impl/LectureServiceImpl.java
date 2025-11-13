@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.controller.dto.LectureCreateDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
@@ -44,14 +44,16 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     @Transactional
-    public LectureCreateResponseDTO registerLecture(
-            Long userId, Long sectionId, String title, int orderNo, MultipartFile file)
+    public LectureCreateResponseDTO registerLecture(LectureCreateDTO lectureCreate)
             throws Exception {
+
+        // validate create lecture dto
+        lectureValidator.validateLectureCreateInfo(lectureCreate);
 
         // find section
         Section findSection =
                 sectionRepository
-                        .findByIdWithCourseAndInstructor(sectionId)
+                        .findByIdWithCourseAndInstructor(lectureCreate.sectionId())
                         .orElseThrow(
                                 () ->
                                         new CustomBusinessException(
@@ -59,17 +61,17 @@ public class LectureServiceImpl implements LectureService {
 
         // check who create this lecture
         lectureValidator.validateLectureAuthority(
-                findSection.getCourse().getInstructor().getId(), userId);
+                findSection.getCourse().getInstructor().getId(), lectureCreate.userId());
 
         // convert File Info DTO
-        UploadFileInfoDTO fileInfo = contentService.uploadFile(file);
+        UploadFileInfoDTO fileInfo = contentService.uploadFile(lectureCreate.file());
 
         // create Lecture
         Lecture newLecture =
                 Lecture.createLecture(
-                        title,
+                        lectureCreate.title(),
                         fileInfo.fileType(),
-                        orderNo,
+                        lectureCreate.orderNo(),
                         fileInfo.fileURL(),
                         findSection,
                         fileInfo.videoDuration());
@@ -91,17 +93,16 @@ public class LectureServiceImpl implements LectureService {
         lectureValidator.validateLectureModifyInfo(modifyInfo);
 
         // find Lecture
-        Lecture findLecture = findLectureAndException(modifyInfo.getLectureId());
+        Lecture findLecture = findLectureAndException(modifyInfo.lectureId());
 
         // validate Lecture authority
         lectureValidator.validateLectureAuthority(
-                findLecture.getSection().getCourse().getInstructor().getId(),
-                modifyInfo.getUserId());
+                findLecture.getSection().getCourse().getInstructor().getId(), modifyInfo.userId());
 
         // setup info
         Long sectionId = findLecture.getSection().getId();
         int oldOrderNo = findLecture.getOrderNo();
-        int newOrderNo = modifyInfo.getOrderNo();
+        int newOrderNo = modifyInfo.orderNo();
 
         // orderNo reorder
         if (newOrderNo < oldOrderNo) {
@@ -112,7 +113,7 @@ public class LectureServiceImpl implements LectureService {
 
         // TODO : section을 변경하면 옮기는 section 내부에서의 orderNo도 변경되어야 해서 현재 보류
         // update Lecture
-        Lecture updatedLecture = findLecture.updateLecture(modifyInfo.getTitle(), newOrderNo);
+        Lecture updatedLecture = findLecture.updateLecture(modifyInfo.title(), newOrderNo);
 
         // convertDTO and return
         return new LectureUpdateResponseDTO(
@@ -125,8 +126,8 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public void removeLecture(LectureDeleteDTO deleteInfo) {
         // set info
-        Long userId = deleteInfo.getUserId();
-        Long lectureId = deleteInfo.getLectureId();
+        Long userId = deleteInfo.userId();
+        Long lectureId = deleteInfo.lectureId();
 
         // find Lecture
         Lecture findLecture = findLectureAndException(lectureId);
