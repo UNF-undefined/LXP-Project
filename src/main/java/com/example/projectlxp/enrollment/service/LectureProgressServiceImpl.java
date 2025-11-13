@@ -86,6 +86,7 @@ public class LectureProgressServiceImpl implements LectureProgressService {
                                                 "존재하지 않는 수강목록입니다.", HttpStatus.NOT_FOUND));
 
         if (progress.isCompleted()) return;
+
         progress.complete();
         eventPublisher.publishEvent(new LectureCompletedEvent(progress.getEnrollment().getId()));
     }

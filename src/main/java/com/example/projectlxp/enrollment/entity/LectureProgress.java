@@ -42,8 +42,8 @@ public class LectureProgress {
     private Long id;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private boolean completed;
+    @Builder.Default
+    private boolean completed = false;
 
     @Column(name = "last_accessed_at")
     private LocalDateTime lastAccessedAt;

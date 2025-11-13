@@ -42,10 +42,12 @@ public class EnrollmentEventListener {
                                         new CustomBusinessException(
                                                 "존재하지 않는 수강신청입니다. ID: " + event.enrollmentId(),
                                                 HttpStatus.NOT_FOUND));
+
         if (enrollment == null) return;
 
         long completedCount =
                 lectureProgressRepository.countByEnrollmentAndCompleted(enrollment, true);
+
 
         enrollment.updateCompletedLectureCount((int) completedCount);
         enrollmentRepository.save(enrollment);
