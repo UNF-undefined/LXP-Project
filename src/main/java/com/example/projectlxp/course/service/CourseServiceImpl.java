@@ -99,8 +99,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Page<CourseDTO> searchCourses(
-            CourseSearchRequest request, Pageable pageable, Long userId) {
+    public Page<CourseDTO> searchCourses(CourseSearchRequest request, Pageable pageable) {
         return courseRepository.searchAll(request, pageable).map(CourseDTO::from);
     }
 

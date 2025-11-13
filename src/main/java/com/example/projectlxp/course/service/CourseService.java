@@ -17,7 +17,7 @@ public interface CourseService {
 
     CourseDTO updateCourse(Long courseId, CourseUpdateRequest request, Long userId);
 
-    Page<CourseDTO> searchCourses(CourseSearchRequest request, Pageable pageable, Long userId);
+    Page<CourseDTO> searchCourses(CourseSearchRequest request, Pageable pageable);
 
     Boolean deleteCourse(Long courseId, Long userId);
 }

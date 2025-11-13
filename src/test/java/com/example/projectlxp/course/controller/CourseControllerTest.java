@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,22 +15,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.course.dto.CourseDTO;
@@ -39,23 +44,9 @@ import com.example.projectlxp.course.dto.response.CourseResponse;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.course.entity.CourseLevel;
 import com.example.projectlxp.course.entity.CourseSortBy;
-import com.example.projectlxp.course.service.CourseService;
-import com.example.projectlxp.global.jwt.JwtTokenProvider;
 import com.example.projectlxp.user.entity.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WithMockUser(username = "1", roles = "STUDENT")
-@ActiveProfiles("test")
-@WebMvcTest(CourseController.class)
-@AutoConfigureMockMvc(addFilters = false)
-class CourseControllerTest {
-    @Autowired private MockMvc mockMvc;
-
-    @Autowired private ObjectMapper objectMapper;
-
-    @MockitoBean private CourseService courseService;
-
-    @MockitoBean private JwtTokenProvider jwtTokenProvider;
+class CourseControllerTest extends CourseControllerTestSupport {
 
     private final Long MOCK_USER_ID = 1L;
     private final Long MOCK_COURSE_ID = 10L;
@@ -87,6 +78,18 @@ class CourseControllerTest {
                 null);
     }
 
+    private RequestPostProcessor instructorAuth() {
+        TestUser principal = new TestUser(MOCK_USER_ID, "test@naver.com", "tester", "INSTRUCTOR");
+        TestingAuthenticationToken auth =
+                new TestingAuthenticationToken(
+                        principal,
+                        null,
+                        List.of(
+                                new SimpleGrantedAuthority("ROLE_INSTRUCTOR"),
+                                new SimpleGrantedAuthority("INSTRUCTOR")));
+        return authentication(auth);
+    }
+
     @Test
     void 강좌_목록_검색_및_페이징_테스트() throws Exception {
         // Given
@@ -94,7 +97,7 @@ class CourseControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<CourseDTO> mockPage = new PageImpl<>(mockContent, pageable, 1);
 
-        given(courseService.searchCourses(any(CourseSearchRequest.class), eq(pageable), any()))
+        given(courseService.searchCourses(any(CourseSearchRequest.class), eq(pageable)))
                 .willReturn(mockPage);
 
         // When & Then
@@ -109,7 +112,7 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.page.totalElements").value(1));
 
-        verify(courseService, times(1)).searchCourses(any(), any(), any());
+        verify(courseService, times(1)).searchCourses(any(), any());
     }
 
     @Test
@@ -125,7 +128,6 @@ class CourseControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.course.id").value(MOCK_COURSE_ID));
-        //            .andExpect(jsonPath("$.data.course.rating").value(4.5));
 
         verify(courseService, times(1)).searchCourse(eq(MOCK_COURSE_ID));
     }
@@ -143,14 +145,17 @@ class CourseControllerTest {
                         null,
                         1L);
         CourseResponse mockResponse = createMockCourseResponse();
+        String content = objectMapper.writeValueAsString(request);
 
         given(courseService.saveCourse(any(CourseSaveRequest.class), any()))
                 .willReturn(mockResponse);
 
-        String content = objectMapper.writeValueAsString(request);
-
         // When & Then
-        mockMvc.perform(post("/courses").contentType(MediaType.APPLICATION_JSON).content(content))
+        mockMvc.perform(
+                        post("/courses")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(content)
+                                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.course.title").value("Mock Detailed Course"));
@@ -159,6 +164,9 @@ class CourseControllerTest {
     }
 
     @Test
+    @WithMockUser(
+            username = "1",
+            authorities = {"INSTRUCTOR"})
     void 강좌_수정_테스트() throws Exception {
         // Given
         CourseUpdateRequest request =
@@ -181,7 +189,8 @@ class CourseControllerTest {
         mockMvc.perform(
                         put("/courses/{courseId}", MOCK_COURSE_ID)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content))
+                                .content(content)
+                                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Mock Course Title"));
@@ -190,6 +199,9 @@ class CourseControllerTest {
     }
 
     @Test
+    @WithMockUser(
+            username = "1",
+            authorities = {"INSTRUCTOR"})
     void 강좌_삭제_테스트() throws Exception {
         // Given
         given(courseService.deleteCourse(eq(MOCK_COURSE_ID), any())).willReturn(true);
@@ -197,12 +209,55 @@ class CourseControllerTest {
         // When & Then
         mockMvc.perform(
                         delete("/courses/{courseId}", MOCK_COURSE_ID)
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("강좌 삭제 성공"))
                 .andExpect(jsonPath("$.data").value(true));
 
         verify(courseService, times(1)).deleteCourse(eq(MOCK_COURSE_ID), any());
+    }
+
+    @TestConfiguration
+    @EnableMethodSecurity
+    public static class TestSecurityConfig {
+        @Bean
+        public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+            DefaultMethodSecurityExpressionHandler expressionHandler =
+                    new DefaultMethodSecurityExpressionHandler();
+            expressionHandler.setDefaultRolePrefix("");
+            return expressionHandler;
+        }
+    }
+
+    public class TestUser implements Serializable {
+        private final Long id;
+        private final String email;
+        private final String name;
+        private final String role;
+
+        public TestUser(Long id, String email, String name, String role) {
+            this.id = id;
+            this.email = email;
+            this.name = name;
+            this.role = role;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getRole() {
+            return role;
+        }
     }
 }

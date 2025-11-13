@@ -45,7 +45,7 @@ jacocoTestReport {
     }
 }
 
-def queryDslVersion = "7.0"
+def queryDslVersion = "7.1"
 def querydslSrcDir  = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
 sourceSets {

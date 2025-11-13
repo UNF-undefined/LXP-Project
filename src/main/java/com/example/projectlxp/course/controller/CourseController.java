@@ -41,10 +41,8 @@ public class CourseController {
 
     @GetMapping
     public PageResponse<List<CourseDTO>> searchAll(
-            @PageableDefault Pageable pageable,
-            @ModelAttribute CourseSearchRequest request,
-            @CurrentUserId Long userId) {
-        Page<CourseDTO> data = courseService.searchCourses(request, pageable, userId);
+            @PageableDefault Pageable pageable, @ModelAttribute CourseSearchRequest request) {
+        Page<CourseDTO> data = courseService.searchCourses(request, pageable);
         return PageResponse.success(data.toList(), PageDTO.of(data));
     }
 

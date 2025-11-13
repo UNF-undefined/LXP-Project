@@ -3,6 +3,7 @@ package com.example.projectlxp.global.config;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -55,6 +56,17 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
             return (Long) principal;
         } else if (principal instanceof CustomUserDetails c) {
             return c.getUserId();
+        } else if (principal instanceof UserDetails userDetails) { // 💡 MockUser 처리 로직 추가
+            // @WithMockUser 사용 시: username("1")을 가져와 Long으로 변환
+            String username = userDetails.getUsername();
+            try {
+                Long userId = Long.valueOf(username);
+                log.info("Current User Argument (Mock/UserDetails): " + userId);
+                return userId; // Long id로 변환하여 반환
+            } catch (NumberFormatException e) {
+                log.error("Mock User username is not a valid Long ID: {}", username);
+                return null;
+            }
         }
         log.info("Current User Argument: " + ((String) principal));
         return null;

@@ -43,6 +43,7 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화 (API서버)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
 
                 // 세션 정책 추가 (API서버는 STATELESS 권장
                 .sessionManagement(
