@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
+import com.example.projectlxp.lecture.controller.dto.LectureCreateDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
@@ -44,14 +44,16 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     @Transactional
-    public LectureCreateResponseDTO registerLecture(
-            Long userId, Long sectionId, String title, int orderNo, MultipartFile file)
+    public LectureCreateResponseDTO registerLecture(LectureCreateDTO lectureCreate)
             throws Exception {
+
+        // validate create lecture dto
+        lectureValidator.validateLectureCreateInfo(lectureCreate);
 
         // find section
         Section findSection =
                 sectionRepository
-                        .findByIdWithCourseAndInstructor(sectionId)
+                        .findByIdWithCourseAndInstructor(lectureCreate.sectionId())
                         .orElseThrow(
                                 () ->
                                         new CustomBusinessException(
@@ -59,17 +61,17 @@ public class LectureServiceImpl implements LectureService {
 
         // check who create this lecture
         lectureValidator.validateLectureAuthority(
-                findSection.getCourse().getInstructor().getId(), userId);
+                findSection.getCourse().getInstructor().getId(), lectureCreate.userId());
 
         // convert File Info DTO
-        UploadFileInfoDTO fileInfo = contentService.uploadFile(file);
+        UploadFileInfoDTO fileInfo = contentService.uploadFile(lectureCreate.file());
 
         // create Lecture
         Lecture newLecture =
                 Lecture.createLecture(
-                        title,
+                        lectureCreate.title(),
                         fileInfo.fileType(),
-                        orderNo,
+                        lectureCreate.orderNo(),
                         fileInfo.fileURL(),
                         findSection,
                         fileInfo.videoDuration());

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
+import com.example.projectlxp.lecture.controller.dto.LectureCreateDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
@@ -37,13 +38,17 @@ public class LectureController {
     public BaseResponse<LectureCreateResponseDTO> createLecture(
             @ModelAttribute LectureCreateRequestDTO request, @CurrentUserId Long userId)
             throws Exception {
-        LectureCreateResponseDTO response =
-                lectureService.registerLecture(
+
+        // convert to DTO
+        LectureCreateDTO lectureCreate =
+                new LectureCreateDTO(
                         userId,
                         request.sectionId(),
                         request.title(),
                         request.orderNo(),
                         request.file());
+
+        LectureCreateResponseDTO response = lectureService.registerLecture(lectureCreate);
         return BaseResponse.success(response);
     }
 
