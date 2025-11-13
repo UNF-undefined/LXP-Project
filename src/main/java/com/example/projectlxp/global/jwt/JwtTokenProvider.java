@@ -66,6 +66,13 @@ public class JwtTokenProvider {
         String authorities =
                 authentication.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
+                        .map(
+                                authority -> { // 여기에서 ROLE_ 접두사를 확인하고 추가
+                                    if (authority.startsWith("ROLE_")) {
+                                        return authority;
+                                    }
+                                    return "ROLE_" + authority;
+                                })
                         .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
@@ -75,6 +82,7 @@ public class JwtTokenProvider {
                 .setSubject(authentication.getName()) // 로그인 할 아이디, email
                 .claim(AUTHORITIES_KEY, authorities) // 권한정보
                 .claim(USER_ID_KEY, userId) // 가져온 PK를 클레임에 추가
+                .claim("roles", authorities)
                 .signWith(key, SignatureAlgorithm.HS512) // 비밀키로 서명
                 .setExpiration(validity) // 만료시간 설정
                 .compact();
@@ -114,12 +122,22 @@ public class JwtTokenProvider {
                             .collect(Collectors.toList());
         }
         Long userId = claims.get(USER_ID_KEY, Long.class);
+        String email = claims.get(Claims.SUBJECT).toString();
+        String dummyPassword = "";
 
-        CustomUserDetails userDetails =
-                (CustomUserDetails) userDetailsService.loadUserByUsername(String.valueOf(userId));
+        CustomUserDetails principalDetails =
+                new CustomUserDetails(
+                        userId,
+                        email,
+                        dummyPassword, // JWT 인증 시 비밀번호는 사용하지 않습니다.
+                        authorities);
 
+        // 4. Authentication 객체 생성 및 반환
         return new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+                principalDetails, // Principal로 CustomUserDetails 객체 사용
+                token, // Credentials (토큰)
+                authorities // 토큰에서 추출한 권한 목록
+                );
     }
 
     // 토큰 검증 메서드

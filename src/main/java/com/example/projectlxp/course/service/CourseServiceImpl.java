@@ -2,6 +2,8 @@ package com.example.projectlxp.course.service;
 
 import static java.util.Objects.nonNull;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import com.example.projectlxp.course.error.CourseNotFoundException;
 import com.example.projectlxp.course.error.CourseNotSavedException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.course.service.validator.CourseValidator;
+import com.example.projectlxp.section.entity.Section;
+import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final SectionRepository sectionRepository;
     private final CourseValidator validator;
 
     @Override
@@ -46,10 +51,12 @@ public class CourseServiceImpl implements CourseService {
 
         Course course =
                 courseRepository
-                        .findByIdAndCategoryIdAndInstructorId(
-                                save.getId(), request.categoryId(), userId)
+                        .findByIdWithInstructorAndCategory(save.getId())
                         .orElseThrow(CourseNotSavedException::new);
-        return new CourseResponse(CourseDTO.from(course), null);
+
+        List<Section> sections =
+                sectionRepository.findAllByCourseIdOrderByOrderNoAsc(course.getId());
+        return CourseResponse.of(course, sections);
     }
 
     @Override
@@ -59,7 +66,9 @@ public class CourseServiceImpl implements CourseService {
                         .findByIdWithInstructorAndCategory(courseId)
                         .orElseThrow(CourseNotFoundException::new);
 
-        return new CourseResponse(CourseDTO.from(course), null);
+        List<Section> sections =
+                sectionRepository.findAllByCourseIdOrderByOrderNoAsc(course.getId());
+        return CourseResponse.of(course, sections);
     }
 
     @Override
@@ -90,8 +99,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Page<CourseDTO> searchCourses(
-            CourseSearchRequest request, Pageable pageable, Long userId) {
+    public Page<CourseDTO> searchCourses(CourseSearchRequest request, Pageable pageable) {
         return courseRepository.searchAll(request, pageable).map(CourseDTO::from);
     }
 

@@ -5,8 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +35,8 @@ public class UserServiceTest {
                         "testUser", "test@exmaple.com", "password123", "STUDENT", null);
         // 2. Mock 객체 행동 정의 (가장 중요!)
         // (1) "findByEmail이 호출되면, 결과 없음(Optional.empty)을 반환해라"
-        when(userRepository.findByEmail(requestDTO.getEmail())).thenReturn(Optional.empty());
+        //
+        // when(userRepository.findByEmail(requestDTO.getEmail())).thenReturn(Optional.empty());
 
         // (2) "passwordEncoder.encode가 호출되면, 'encodedPW'라고 반환해라"
         when(passwordEncoder.encode(requestDTO.getPassword())).thenReturn("encodedPW");

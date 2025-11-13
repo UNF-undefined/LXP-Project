@@ -1,5 +1,9 @@
 package com.example.projectlxp.course.dto;
 
+import static java.util.Objects.isNull;
+
+import org.hibernate.Hibernate;
+
 import com.example.projectlxp.category.entity.Category;
 import com.example.projectlxp.course.entity.Course;
 import com.example.projectlxp.user.entity.User;
@@ -16,7 +20,11 @@ public record CourseDTO(
         CategoryDTO category) {
 
     public record UserDTO(Long id, String name, String email) {
+
         public static UserDTO of(User user) {
+            if (!Hibernate.isInitialized(user) || isNull(user)) {
+                return new UserDTO(null, "알 수 없음", null);
+            }
             return new UserDTO(user.getId(), user.getName(), user.getEmail());
         }
     }

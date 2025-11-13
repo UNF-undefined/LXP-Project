@@ -42,4 +42,13 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     Optional<Section> findByIdWithCourseAndInstructor(@Param("id") Long id);
 
     List<Section> findAllByCourseOrderByOrderNoAsc(Course course);
+
+    @Query(
+            """
+    SELECT s FROM Section s
+    LEFT JOIN FETCH s.lectures l
+    WHERE s.course.id = :courseId
+    ORDER BY s.orderNo ASC, l.orderNo ASC
+    """)
+    List<Section> findAllByCourseIdOrderByOrderNoAsc(Long courseId);
 }
