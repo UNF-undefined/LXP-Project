@@ -85,10 +85,11 @@ public class UserController {
     // 회원 탈퇴 API
     @DeleteMapping("/withdraw")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204 nO Content반환
-    public void withdrawUser(
+    public ResponseEntity<String> withdrawUser(
             // Security Context에서 인증된 사용자 ID를 가져옴
             @AuthenticationPrincipal CustomUserDetails principal) {
 
         userService.withdraw(principal.getUserId());
+        return ResponseEntity.ok("성공적으로 탈퇴되었습니다. ");
     }
 }
