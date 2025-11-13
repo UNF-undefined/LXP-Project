@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import com.example.projectlxp.course.entity.CourseLevel;
 import com.example.projectlxp.course.error.CourseNotFoundException;
 import com.example.projectlxp.course.repository.CourseRepository;
 import com.example.projectlxp.course.service.validator.CourseValidator;
+import com.example.projectlxp.section.repository.SectionRepository;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
 
@@ -40,6 +42,7 @@ class CourseServiceImplTest {
     @Mock private CourseRepository courseRepository;
     @Mock private CourseValidator courseValidator;
     @Mock private UserRepository userRepository;
+    @Mock private SectionRepository sectionRepository;
     @Mock private CategoryRepository categoryRepository;
 
     @Test
@@ -63,8 +66,9 @@ class CourseServiceImplTest {
         when(courseRepository.save(any(Course.class))).thenReturn(course);
         when(userRepository.getReferenceById(any())).thenReturn(instructor);
         when(categoryRepository.getReferenceById(any())).thenReturn(category);
-        when(courseRepository.findByIdAndCategoryIdAndInstructorId(any(), any(), any()))
+        when(courseRepository.findByIdWithInstructorAndCategory(any()))
                 .thenReturn(Optional.of(course));
+        when(sectionRepository.findAllByCourseIdOrderByOrderNoAsc(any())).thenReturn(List.of());
         CourseDTO courseDTO = courseService.saveCourse(request, 1L).course();
 
         // then
@@ -94,6 +98,7 @@ class CourseServiceImplTest {
         // when
         when(courseRepository.findByIdWithInstructorAndCategory(1L))
                 .thenReturn(Optional.of(course));
+        when(sectionRepository.findAllByCourseIdOrderByOrderNoAsc(any())).thenReturn(List.of());
         CourseDTO dto = courseService.searchCourse(1L).course();
 
         // then

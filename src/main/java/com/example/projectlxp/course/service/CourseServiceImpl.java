@@ -51,8 +51,7 @@ public class CourseServiceImpl implements CourseService {
 
         Course course =
                 courseRepository
-                        .findByIdAndCategoryIdAndInstructorId(
-                                save.getId(), request.categoryId(), userId)
+                        .findByIdWithInstructorAndCategory(save.getId())
                         .orElseThrow(CourseNotSavedException::new);
 
         List<Section> sections =
