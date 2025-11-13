@@ -10,7 +10,11 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.example.projectlxp.global.annotation.CurrentUserId;
+import com.example.projectlxp.user.dto.CustomUserDetails;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -18,6 +22,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         // @CurrentUserID가 붙어있고, 타입이 Long일 때만 작동
+        log.info("supportsParameter(MethodParameter parameter)");
         return parameter.hasParameterAnnotation(CurrentUserId.class)
                 && parameter.getParameterType().equals(Long.class);
     }
@@ -34,9 +39,10 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
+            log.info("No current user found");
             return null;
         }
-
+        log.info("Resolving Current User Argument");
         /*
          * JwtTokenProvider.getAuthentication()에서
          * Principal에 Long userID를 직접 넣었으므로,
@@ -45,9 +51,12 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof Long) {
+            log.info("Current User Argument: " + ((Long) principal));
             return (Long) principal;
+        } else if (principal instanceof CustomUserDetails c) {
+            return c.getUserId();
         }
-
+        log.info("Current User Argument: " + ((String) principal));
         return null;
     }
 }

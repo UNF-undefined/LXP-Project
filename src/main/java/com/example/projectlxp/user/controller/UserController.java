@@ -1,14 +1,19 @@
 package com.example.projectlxp.user.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projectlxp.global.annotation.CurrentUserId;
+import com.example.projectlxp.user.dto.CustomUserDetails;
 import com.example.projectlxp.user.dto.TokenResponseDTO;
 import com.example.projectlxp.user.dto.UserJoinRequestDTO;
 import com.example.projectlxp.user.dto.UserLoginRequestDTO;
@@ -75,5 +80,16 @@ public class UserController {
         userService.updatePassword(userId, requestDTO);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다. ");
+    }
+
+    // 회원 탈퇴 API
+    @DeleteMapping("/withdraw")
+    @ResponseStatus(HttpStatus.NO_CONTENT) // 204 nO Content반환
+    public ResponseEntity<String> withdrawUser(
+            // Security Context에서 인증된 사용자 ID를 가져옴
+            @AuthenticationPrincipal CustomUserDetails principal) {
+
+        userService.withdraw(principal.getUserId());
+        return ResponseEntity.ok("성공적으로 탈퇴되었습니다. ");
     }
 }
