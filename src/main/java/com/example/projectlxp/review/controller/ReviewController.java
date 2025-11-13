@@ -5,7 +5,6 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.service.ReviewService;
-import com.example.projectlxp.user.entity.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,10 +42,9 @@ public class ReviewController {
     public BaseResponse<ReviewResponseDTO> createReview(
             @PathVariable Long courseId,
             @Valid @RequestBody ReviewRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+            @CurrentUserId Long userId) {
 
-        ReviewResponseDTO responseDTO =
-                reviewService.createReview(courseId, requestDTO, user.getId());
+        ReviewResponseDTO responseDTO = reviewService.createReview(courseId, requestDTO, userId);
 
         return BaseResponse.success(responseDTO);
     }
@@ -54,8 +52,8 @@ public class ReviewController {
     // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public BaseResponse<Void> deleteReview(
-            @PathVariable Long reviewId, @AuthenticationPrincipal User user) {
-        reviewService.deleteReview(reviewId, user.getId());
+            @PathVariable Long reviewId, @CurrentUserId Long userId) {
+        reviewService.deleteReview(reviewId, userId);
         return BaseResponse.success(null);
     }
 
@@ -64,10 +62,9 @@ public class ReviewController {
     public BaseResponse<ReviewResponseDTO> updateReview(
             @PathVariable Long reviewId,
             @Valid @RequestBody ReviewRequestDTO requestDTO,
-            @AuthenticationPrincipal User user) {
+            @CurrentUserId Long userId) {
 
-        ReviewResponseDTO responseDTO =
-                reviewService.updateReview(reviewId, requestDTO, user.getId());
+        ReviewResponseDTO responseDTO = reviewService.updateReview(reviewId, requestDTO, userId);
 
         return BaseResponse.success(responseDTO);
     }
