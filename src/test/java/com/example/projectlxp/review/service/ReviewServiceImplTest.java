@@ -35,6 +35,7 @@ import com.example.projectlxp.review.entity.Review;
 import com.example.projectlxp.review.repository.ReviewRepository;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
+import com.example.projectlxp.util.ProfanityFilter;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -46,6 +47,7 @@ class ReviewServiceImplTest {
     @Mock private UserRepository userRepository;
     @Mock private CourseRepository courseRepository;
     @Mock private EnrollmentRepository enrollmentRepository;
+    @Mock private ProfanityFilter mockProfanityFilter;
 
     @Mock private User mockUser;
     @Mock private User mockDeletedUser;
@@ -69,6 +71,8 @@ class ReviewServiceImplTest {
         when(mockReview.getId()).thenReturn(reviewId);
         when(mockReview.getUser()).thenReturn(mockUser);
         when(mockReview.getCourse()).thenReturn(mockCourse);
+        when(mockProfanityFilter.filter(anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     // [ 기능1: 리뷰 조회 ]
@@ -159,12 +163,61 @@ class ReviewServiceImplTest {
                 });
     }
 
+    @Test
+    @DisplayName("리뷰 작성: 비속어가 포함된 경우, 마스킹되어 저장/반환된다")
+    void createReview_WithProfanity_ShouldBeMasked() {
+        // --- [ Given ] ---
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        when(enrollmentRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(true);
+        when(reviewRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(false);
+
+        ReviewRequestDTO dirtyRequest = new ReviewRequestDTO("이런 바보 같은 강의", 1);
+
+        when(mockProfanityFilter.filter("이런 바보 같은 강의")).thenReturn("이런 ** 같은 강의");
+
+        when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArgument(0));
+
+        when(mockUser.getName()).thenReturn("테스트유저");
+
+        // --- [ When ] ---
+        ReviewResponseDTO response = reviewService.createReview(courseId, dirtyRequest, userId);
+
+        // --- [ Then ] ---
+        assertThat(response.getContent()).isEqualTo("이런 ** 같은 강의");
+        assertThat(response.getUsername()).isEqualTo("테스트유저");
+    }
+
+    @Test
+    @DisplayName("리뷰 작성: '숫자/특수문자' 우회 비속어 포함 시, 마스킹되어 저장된다")
+    void createReview_WithObfuscatedProfanity_ShouldBeMasked() {
+        // --- [ Given ] ---
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        when(enrollmentRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(true);
+        when(reviewRepository.existsByUserAndCourse(mockUser, mockCourse)).thenReturn(false);
+
+        ReviewRequestDTO dirtyRequest = new ReviewRequestDTO("이런 시1발@ 같은 강의", 1);
+
+        when(mockProfanityFilter.filter("이런 시1발@ 같은 강의")).thenReturn("이런 ** 같은 강의");
+        when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArgument(0));
+        when(mockUser.getName()).thenReturn("테스트유저");
+
+        // --- [ When ] ---
+        ReviewResponseDTO response = reviewService.createReview(courseId, dirtyRequest, userId);
+
+        // --- [ Then ] ---
+        assertThat(response.getContent()).isEqualTo("이런 ** 같은 강의");
+        assertThat(response.getUsername()).isEqualTo("테스트유저");
+
+        verify(mockProfanityFilter, times(1)).filter("이런 시1발@ 같은 강의");
+    }
+
     // [ 기능 3: 리뷰 수정 (정상) ]
     @Test
     @DisplayName("리뷰 수정: '성공' 케이스")
     void updateReview_Success() {
         // --- [ Given ] ---
-
         double expectedRating = 1.0;
         String expectedContent = "수정된 내용";
         ReviewRequestDTO updateRequest =
@@ -176,10 +229,9 @@ class ReviewServiceImplTest {
 
         doNothing().when(mockReview).updateReview(anyString(), anyDouble());
 
-        when(mockUser.isDeleted()).thenReturn(false);
         when(mockUser.getName()).thenReturn("테스트유저");
-        when(mockReview.getContent()).thenReturn(expectedContent);
         when(mockReview.getRating()).thenReturn(expectedRating);
+        when(mockReview.getContent()).thenReturn(expectedContent);
 
         // --- [ When (실행) ] ---
         ReviewResponseDTO result = reviewService.updateReview(reviewId, updateRequest, userId);
@@ -189,6 +241,7 @@ class ReviewServiceImplTest {
 
         assertThat(result.getContent()).isEqualTo(expectedContent);
         assertThat(result.getRating()).isEqualTo(expectedRating);
+        assertThat(result.getUsername()).isEqualTo("테스트유저");
     }
 
     // [ 기능 3: 리뷰 수정 (예외 - 권한) ]
@@ -223,7 +276,7 @@ class ReviewServiceImplTest {
 
     // [ 기능 4: 리뷰 삭제 (예외 - 권한) ]
     @Test
-    @DisplayName("리뷰 삭제: '남의' 리뷰를 삭제 시도 시, '권한 없음' 예외가 발생한다")
+    @DisplayName("리뷰 삭제: '남의' 리뷰를 삭제 시도 시, '권한 없음' 예외가 발생한다!")
     void testDeleteReview_FailsOnPermissionDenied() {
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(mockReview));
         when(userRepository.findById(attackerId)).thenReturn(Optional.of(mockAttacker));

@@ -10,8 +10,10 @@ import com.example.projectlxp.content.service.ContentService;
 import com.example.projectlxp.content.service.dto.UploadFileInfoDTO;
 import com.example.projectlxp.global.error.CustomBusinessException;
 import com.example.projectlxp.lecture.controller.dto.LectureDeleteDTO;
+import com.example.projectlxp.lecture.controller.dto.LectureDetailDTO;
 import com.example.projectlxp.lecture.controller.dto.LectureModifyDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureCreateResponseDTO;
+import com.example.projectlxp.lecture.controller.dto.response.LectureGetDetailResponseDTO;
 import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
 import com.example.projectlxp.lecture.entity.Lecture;
 import com.example.projectlxp.lecture.repository.LectureRepository;
@@ -141,9 +143,39 @@ public class LectureServiceImpl implements LectureService {
                 findLecture.getSection().getId(), findLecture.getOrderNo());
     }
 
+    @Override
+    @Transactional
+    public LectureGetDetailResponseDTO getLectureDetail(LectureDetailDTO detailInfo) {
+        // set info
+        Long userId = detailInfo.userId();
+        Long lectureId = detailInfo.lectureId();
+
+        // find Lecture
+        Lecture findLecture = findLectureDetail(lectureId);
+
+        // validate lecture authority
+        lectureValidator.validateLectureAuthority(
+                findLecture.getSection().getCourse().getInstructor().getId(), userId);
+
+        // convertDTO and return
+        return new LectureGetDetailResponseDTO(
+                lectureId,
+                findLecture.getTitle(),
+                findLecture.getFile(),
+                findLecture.getType(),
+                findLecture.getOrderNo());
+    }
+
     private Lecture findLectureAndException(Long lectureId) {
         return lectureRepository
                 .findById(lectureId)
+                .orElseThrow(
+                        () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    private Lecture findLectureDetail(Long lectureId) {
+        return lectureRepository
+                .findDetailById(lectureId)
                 .orElseThrow(
                         () -> new CustomBusinessException("강의를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }

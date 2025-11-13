@@ -9,8 +9,9 @@ public class TokenResponseDTO {
     private String refreshtoken;
     private String tokenType = "Bearer"; // 출입증
 
-    public TokenResponseDTO(String accesstoken, String refreshtoken) {
+    public TokenResponseDTO(String accesstoken, String refreshtoken, String tokenType) {
         this.accesstoken = accesstoken;
         this.refreshtoken = refreshtoken;
+        this.tokenType = "Bearer";
     }
 }

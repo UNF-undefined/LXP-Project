@@ -19,6 +19,7 @@ import com.example.projectlxp.review.entity.Review;
 import com.example.projectlxp.review.repository.ReviewRepository;
 import com.example.projectlxp.user.entity.User;
 import com.example.projectlxp.user.repository.UserRepository;
+import com.example.projectlxp.util.ProfanityFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,10 +30,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final CourseRepository courseRepository;
-
     private final UserRepository userRepository;
-
     private final EnrollmentRepository enrollmentRepository;
+    private final ProfanityFilter profanityFilter;
 
     @Override
     public PageResponse<List<ReviewResponseDTO>> getReviewsByCourse(
@@ -96,9 +96,11 @@ public class ReviewServiceImpl implements ReviewService {
             throw new CustomBusinessException("이미 이 강좌에 대한 리뷰를 작성했습니다.");
         }
 
+        String cleanContent = profanityFilter.filter(requestDTO.getContent());
+
         Review newReview =
                 Review.builder()
-                        .content(requestDTO.getContent())
+                        .content(cleanContent)
                         .rating(requestDTO.getRating())
                         .user(user)
                         .course(course)
@@ -108,9 +110,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         return ReviewResponseDTO.builder()
                 .reviewId(savedReview.getId())
-                .content(savedReview.getContent())
+                .content(cleanContent)
                 .rating(savedReview.getRating())
-                .username(savedReview.getUser().getName())
+                .username(user.getName())
                 .createdAt(savedReview.getCreatedAt())
                 .build();
     }
@@ -170,13 +172,15 @@ public class ReviewServiceImpl implements ReviewService {
 
         this.checkReviewOwner(review, user);
 
-        review.updateReview(requestDTO.getContent(), requestDTO.getRating());
+        String cleanContent = profanityFilter.filter(requestDTO.getContent());
+
+        review.updateReview(cleanContent, requestDTO.getRating());
 
         return ReviewResponseDTO.builder()
                 .reviewId(review.getId())
-                .content(review.getContent())
+                .content(cleanContent)
                 .rating(review.getRating())
-                .username(review.getUser().getName())
+                .username(user.getName())
                 .createdAt(review.getCreatedAt())
                 .build();
     }
