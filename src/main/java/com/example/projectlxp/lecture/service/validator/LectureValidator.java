@@ -17,15 +17,15 @@ public class LectureValidator {
     }
 
     public void validateLectureModifyInfo(LectureModifyDTO dto) {
-        if ((dto.getTitle() == null || dto.getTitle().isBlank()) && dto.getOrderNo() == 0) {
+        if ((dto.title() == null || dto.title().isBlank()) && dto.orderNo() == 0) {
             throw new CustomBusinessException("수정할 필드가 없습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        if (dto.getTitle() != null && dto.getTitle().isBlank()) {
+        if (dto.title() != null && dto.title().isBlank()) {
             throw new CustomBusinessException("강의 제목은 비워둘 수 없습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        if (dto.getOrderNo() != 0 && dto.getOrderNo() <= 0) {
+        if (dto.orderNo() != 0 && dto.orderNo() <= 0) {
             throw new CustomBusinessException("강의 순서는 1 이상의 값이어야 합니다.", HttpStatus.BAD_REQUEST);
         }
     }

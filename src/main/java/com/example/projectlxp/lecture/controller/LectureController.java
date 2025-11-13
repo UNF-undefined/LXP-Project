@@ -60,7 +60,7 @@ public class LectureController {
 
         // convert to LectureModifyDTO
         LectureModifyDTO modifyInfo =
-                new LectureModifyDTO(userId, lectureId, request.getTitle(), request.getOrderNo());
+                new LectureModifyDTO(userId, lectureId, request.title(), request.orderNo());
 
         LectureUpdateResponseDTO response = lectureService.modifyLecture(modifyInfo);
 
