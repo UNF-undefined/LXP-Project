@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.global.dto.PageResponse;
 import com.example.projectlxp.review.dto.ReviewRequestDTO;
@@ -42,13 +42,9 @@ public class ReviewController {
     public BaseResponse<ReviewResponseDTO> createReview(
             @PathVariable Long courseId,
             @Valid @RequestBody ReviewRequestDTO requestDTO,
+            @CurrentUserId Long userId) {
 
-            // Security 대신 '1번 유저'가 썼다고 가정하고 임시 ID를 받음
-            // (나중에 Security 적용되면 이 파라미터는 @AuthenticationPrincipal User user로 변경됨)
-            @RequestParam(defaultValue = "1") Long tempUserId) {
-
-        ReviewResponseDTO responseDTO =
-                reviewService.createReview(courseId, requestDTO, tempUserId);
+        ReviewResponseDTO responseDTO = reviewService.createReview(courseId, requestDTO, userId);
 
         return BaseResponse.success(responseDTO);
     }
@@ -56,10 +52,8 @@ public class ReviewController {
     // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public BaseResponse<Void> deleteReview(
-            @PathVariable Long reviewId,
-            @RequestParam(defaultValue = "1") Long tempUserId // (임시) 임시 유저 ID를 받음
-            ) {
-        reviewService.deleteReview(reviewId, tempUserId);
+            @PathVariable Long reviewId, @CurrentUserId Long userId) {
+        reviewService.deleteReview(reviewId, userId);
         return BaseResponse.success(null);
     }
 
@@ -68,11 +62,9 @@ public class ReviewController {
     public BaseResponse<ReviewResponseDTO> updateReview(
             @PathVariable Long reviewId,
             @Valid @RequestBody ReviewRequestDTO requestDTO,
-            // (임시) '본인 확인'을 위한 유저 ID
-            @RequestParam(defaultValue = "1") Long tempUserId) {
+            @CurrentUserId Long userId) {
 
-        ReviewResponseDTO responseDTO =
-                reviewService.updateReview(reviewId, requestDTO, tempUserId);
+        ReviewResponseDTO responseDTO = reviewService.updateReview(reviewId, requestDTO, userId);
 
         return BaseResponse.success(responseDTO);
     }
