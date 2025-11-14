@@ -21,6 +21,9 @@ import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.service.EnrollmentService;
 import com.example.projectlxp.global.dto.BaseResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Enrollment")
 @RestController
 @RequestMapping("/enrollments")
 public class EnrollmentController {

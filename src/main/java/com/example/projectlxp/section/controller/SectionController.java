@@ -20,6 +20,9 @@ import com.example.projectlxp.section.controller.dto.response.SectionCreateRespo
 import com.example.projectlxp.section.controller.dto.response.SectionUpdateResponseDTO;
 import com.example.projectlxp.section.service.SectionService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Section")
 @RestController
 @RequestMapping(value = "/sections")
 public class SectionController {

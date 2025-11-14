@@ -24,6 +24,9 @@ import com.example.projectlxp.lecture.controller.dto.response.LectureGetDetailRe
 import com.example.projectlxp.lecture.controller.dto.response.LectureUpdateResponseDTO;
 import com.example.projectlxp.lecture.service.LectureService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Lecture")
 @RestController
 @RequestMapping("/lectures")
 public class LectureController {

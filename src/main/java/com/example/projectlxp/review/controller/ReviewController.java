@@ -21,8 +21,10 @@ import com.example.projectlxp.review.dto.ReviewRequestDTO;
 import com.example.projectlxp.review.dto.ReviewResponseDTO;
 import com.example.projectlxp.review.service.ReviewService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Review")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/reviews")
