@@ -29,6 +29,9 @@ import com.example.projectlxp.global.dto.BaseResponse;
 import com.example.projectlxp.global.dto.PageDTO;
 import com.example.projectlxp.global.dto.PageResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Course")
 @RestController
 @RequestMapping("/courses")
 public class CourseController {
