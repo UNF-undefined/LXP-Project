@@ -19,6 +19,7 @@ import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
 import com.example.projectlxp.enrollment.service.EnrollmentService;
+import com.example.projectlxp.global.annotation.CurrentUserId;
 import com.example.projectlxp.global.dto.BaseResponse;
 
 @RestController
@@ -32,7 +33,7 @@ public class EnrollmentController {
 
     @PostMapping
     public BaseResponse<CreateEnrollmentResponseDTO> enrollCourse(
-            @RequestParam Long userId, @Valid @RequestBody CreateEnrollmentRequestDTO requestDTO) {
+            @CurrentUserId Long userId, @Valid @RequestBody CreateEnrollmentRequestDTO requestDTO) {
         CreateEnrollmentResponseDTO createEnrollmentResponseDTO =
                 enrollmentService.enrollCourse(userId, requestDTO);
         return BaseResponse.success("수강신청이 성공적으로 완료되었습니다.", createEnrollmentResponseDTO);
@@ -40,7 +41,7 @@ public class EnrollmentController {
 
     @GetMapping("/{enrollmentId}/detail")
     public BaseResponse<EnrolledCourseDetailDTO> getMyCourseDetail(
-            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+            @CurrentUserId Long userId, @PathVariable Long enrollmentId) {
         EnrolledCourseDetailDTO enrolledCourseDetailDTO =
                 enrollmentService.getMyEnrolledCourseDetail(userId, enrollmentId);
         return BaseResponse.success("수강중인 강좌 상세 조회를 성공했습니다.", enrolledCourseDetailDTO);
@@ -48,7 +49,7 @@ public class EnrollmentController {
 
     @GetMapping("/my")
     public BaseResponse<PagedEnrolledCourseDTO> getMyCourses(
-            @RequestParam Long userId,
+            @CurrentUserId Long userId,
             @RequestParam(defaultValue = "false") Boolean hidden,
             @PageableDefault Pageable pageable) {
         PagedEnrolledCourseDTO pagedEnrolledCourseDTO =
@@ -58,14 +59,14 @@ public class EnrollmentController {
 
     @PutMapping("/{enrollmentId}/hide")
     public BaseResponse<EnrolledCourseDTO> hideEnrollment(
-            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+            @CurrentUserId Long userId, @PathVariable Long enrollmentId) {
         return BaseResponse.success(
                 "수강중인 강좌가 성공적으로 숨겨졌습니다.", enrollmentService.hideEnrollment(userId, enrollmentId));
     }
 
     @PutMapping("/{enrollmentId}/unhide")
     public BaseResponse<EnrolledCourseDTO> unhideEnrollment(
-            @RequestParam Long userId, @PathVariable Long enrollmentId) {
+            @CurrentUserId Long userId, @PathVariable Long enrollmentId) {
         return BaseResponse.success(
                 "수강중인 강좌가 성공적으로 숨김 해제되었습니다.",
                 enrollmentService.unhideEnrollment(userId, enrollmentId));

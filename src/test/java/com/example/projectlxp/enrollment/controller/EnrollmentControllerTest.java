@@ -18,7 +18,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import com.example.projectlxp.ControllerTestSupport;
 import com.example.projectlxp.enrollment.dto.request.CreateEnrollmentRequestDTO;
@@ -28,46 +27,52 @@ import com.example.projectlxp.enrollment.dto.response.EnrolledCourseDetailDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledLectureDTO;
 import com.example.projectlxp.enrollment.dto.response.EnrolledSectionDTO;
 import com.example.projectlxp.enrollment.dto.response.PagedEnrolledCourseDTO;
+import com.example.projectlxp.global.annotation.WithMockUserId;
 
 class EnrollmentControllerTest extends ControllerTestSupport {
 
+    @WithMockUserId
     @DisplayName("강좌 수강신청을 성공한다.")
     @Test
     void enrollCourse_Success() throws Exception {
         // given
         Long courseId = 1L;
-        Long userId = 1L;
+        Long expectedUserId = 1L; // 2. "testUser"의 ID가 1L이라고 가정합니다.
 
         CreateEnrollmentRequestDTO request =
                 CreateEnrollmentRequestDTO.builder().courseId(courseId).build();
 
+        CreateEnrollmentResponseDTO responseDTO =
+                CreateEnrollmentResponseDTO.builder()
+                        .enrollmentId(1L)
+                        .userId(expectedUserId) // 3. 응답 DTO에도 1L을 사용
+                        .userName("testUser")
+                        .courseId(courseId)
+                        .courseTitle("Java Programming")
+                        .enrolledAt(LocalDateTime.now())
+                        .build();
+
         given(
                         enrollmentService.enrollCourse(
-                                any(Long.class), any(CreateEnrollmentRequestDTO.class)))
-                .willReturn(
-                        CreateEnrollmentResponseDTO.builder()
-                                .enrollmentId(1L)
-                                .userId(1L)
-                                .userName("testUser")
-                                .courseId(1L)
-                                .courseTitle("Java Programming")
-                                .enrolledAt(LocalDateTime.now())
-                                .build());
+                                eq(expectedUserId), any(CreateEnrollmentRequestDTO.class)))
+                .willReturn(responseDTO);
 
         /// when // then
         mockMvc.perform(
                         post("/enrollments")
-                                .with(csrf())
-                                .param("userId", String.valueOf(userId))
+                                .with(csrf()) // Spring Security 테스트 시 CSRF 토큰 필요
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("200"))
                 .andExpect(jsonPath("$.code").value("OK"))
-                .andExpect(jsonPath("$.message").value("수강신청이 성공적으로 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("수강신청이 성공적으로 완료되었습니다."))
+                .andExpect(jsonPath("$.data.userId").value(expectedUserId)) // 5. 응답 데이터의 ID도 검증
+                .andExpect(jsonPath("$.data.courseId").value(courseId));
     }
 
+    @WithMockUserId
     @DisplayName("수강 신청을 할 때, 강좌 아이디는 필수 값이다.")
     @Test
     void createOrderWithEmptyProductNumbers() throws Exception {
@@ -76,7 +81,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
         // when // then
         mockMvc.perform(
                         post("/enrollments")
-                                .param("userId", "1")
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .with(csrf()))
@@ -85,6 +89,7 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUserId
     @DisplayName("숨김 처리 상태가 수강 목록을 제외하고 내 수강 목록을 성공적으로 조회한다.")
     @Test
     void getMyCourses_Success() throws Exception {
@@ -135,7 +140,7 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                                 .value("Database Essentials"));
     }
 
-    @WithMockUser
+    @WithMockUserId
     @DisplayName("수강 강좌 숨김 처리 API 성공")
     @Test
     void hideEnrollment_Success() throws Exception {
@@ -157,7 +162,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
         mockMvc.perform(
                         put("/enrollments/{enrollmentId}/hide", enrollmentId)
                                 .with(csrf())
-                                .param("userId", String.valueOf(userId))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("200"))
@@ -167,7 +171,7 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.data.hidden").value(true));
     }
 
-    @WithMockUser // Spring Security가 적용된 엔드포인트일 경우를 대비해 추가
+    @WithMockUserId
     @DisplayName("수강중인 강좌의 상세 정보를 조회한다.")
     @Test
     void getMyCourseDetail_Success() throws Exception {
@@ -232,7 +236,7 @@ class EnrollmentControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.data.sections[0].lectures[1].completed").value(false));
     }
 
-    @WithMockUser
+    @WithMockUserId
     @DisplayName("수강 강좌 숨김 해제 API 성공")
     @Test
     void unhideEnrollment_Success() throws Exception {
@@ -254,7 +258,6 @@ class EnrollmentControllerTest extends ControllerTestSupport {
         mockMvc.perform(
                         put("/enrollments/{enrollmentId}/unhide", enrollmentId)
                                 .with(csrf())
-                                .param("userId", String.valueOf(userId))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("200"))
