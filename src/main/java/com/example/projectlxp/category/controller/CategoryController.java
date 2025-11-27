@@ -10,6 +10,9 @@ import com.example.projectlxp.category.dto.CategoryDTO;
 import com.example.projectlxp.category.service.CategoryService;
 import com.example.projectlxp.global.dto.BaseResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Category")
 @RestController
 @RequestMapping("/categories")
 public class CategoryController {
